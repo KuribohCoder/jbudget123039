@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.MovementViewController"
+      spacing="10" alignment="CENTER" style="-fx-padding: 20;">
+
+    <Label text="Aggiungi Movimento" style="-fx-font-size: 18px;"/>
+
+    <TextField fx:id="descriptionField" promptText="Descrizione"/>
+    <TextField fx:id="amountField" promptText="Importo"/>
+    <DatePicker fx:id="datePicker"/>
+    <CheckBox fx:id="incomeCheckBox" text="Entrata"/>
+    <Button text="Aggiungi" onAction="#handleAddMovement"/>
+    <Button fx:id="deleteButton" text="Elimina Movimento" onAction="#handleDeleteMovement"/>
+
+    <Label text="Movimenti" style="-fx-font-size: 16px;"/>
+    <TableView fx:id="movementTable" prefHeight="300">
+        <columns>
+            <TableColumn text="Descrizione" fx:id="colDescription"/>
+            <TableColumn text="Data" fx:id="colDate"/>
+            <TableColumn text="Importo" fx:id="colAmount"/>
+            <TableColumn text="Tipo" fx:id="colType"/>
+        </columns>
+    </TableView>
+</VBox>
