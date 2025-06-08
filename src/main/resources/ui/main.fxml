@@ -2,15 +2,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="it.unicam.cs.mpgc.jbudget123039.view.MainViewController">
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="it.unicam.cs.mpgc.jbudget123039.view.MainView"
+            fx:id="mainRoot">
     <top>
         <Label text="Gestione Budget Familiare" style="-fx-font-size: 24px; -fx-padding: 10;"/>
     </top>
     <center>
         <VBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
             <Button text="Movimenti" onAction="#showMovements"/>
+            <Button text="Tag" onAction="#showTags"/>
+            <Button text="Gestione Tag Gerarchica" onAction="#showTagHierarchy"/>
             <Button text="Budget" onAction="#showBudget"/>
             <Button text="Statistiche" onAction="#showStatistics"/>
+            <Button text="Ammortamento" onAction="#showAmortization"/>
         </VBox>
     </center>
 </BorderPane>

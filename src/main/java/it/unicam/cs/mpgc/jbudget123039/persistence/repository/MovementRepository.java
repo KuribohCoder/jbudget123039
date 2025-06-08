@@ -1,6 +1,7 @@
-package it.unicam.cs.mpgc.jbudget123039.persistence;
+package it.unicam.cs.mpgc.jbudget123039.persistence.repository;
 
-import it.unicam.cs.mpgc.jbudget123039.model.movement.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -12,12 +13,12 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MovementDAO {
+public class MovementRepository {
 
     private final EntityManagerFactory emf;
     private final ExecutorService executor;
 
-    public MovementDAO() {
+    public MovementRepository() {
         this.emf = Persistence.createEntityManagerFactory("jbudgetPU");
         this.executor = Executors.newFixedThreadPool(4); // 4 thread per DB async
     }
@@ -27,6 +28,15 @@ public class MovementDAO {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
+
+                // Gestione dei tag per evitare errore "detached entity"
+                if (entity.getTags() != null && !entity.getTags().isEmpty()) {
+                    List<TagEntity> managedTags = entity.getTags().stream()
+                            .map(tag -> em.getReference(TagEntity.class, tag.getId()))
+                            .toList();
+                    entity.setTags(managedTags);
+                }
+
                 em.persist(entity);
                 em.getTransaction().commit();
             } catch (Exception e) {
@@ -56,14 +66,21 @@ public class MovementDAO {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
+
+                System.out.println("Cerco entità con ID: " + id);
                 MovementEntity entity = em.find(MovementEntity.class, id);
-                if (entity != null) {
+
+                if (entity == null) {
+                    System.out.println("⚠️ Movimento non trovato in DB!");
+                } else {
                     em.remove(entity);
+                    System.out.println("✅ Movimento rimosso");
                 }
+
                 em.getTransaction().commit();
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
-                throw e;
+                throw new RuntimeException(e);
             } finally {
                 em.close();
             }

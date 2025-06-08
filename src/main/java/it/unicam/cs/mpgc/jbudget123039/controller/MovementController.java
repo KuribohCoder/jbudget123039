@@ -1,11 +1,11 @@
 package it.unicam.cs.mpgc.jbudget123039.controller;
 
-import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
-import it.unicam.cs.mpgc.jbudget123039.model.movement.BasicMovement;
-import it.unicam.cs.mpgc.jbudget123039.model.movement.MovementEntity;
-import it.unicam.cs.mpgc.jbudget123039.model.movement.Tag;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.*;
 import it.unicam.cs.mpgc.jbudget123039.mapper.MovementMapper;
-import it.unicam.cs.mpgc.jbudget123039.persistence.MovementDAO;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.repository.MovementRepository;
+import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,20 +17,8 @@ import java.util.concurrent.CompletionStage;
 public class MovementController {
 
     private final List<Movement> movements = new ArrayList<>();
-    MovementDAO dao = new MovementDAO();
-    public void addMovement(String description, LocalDate date, BigDecimal amount, boolean income, List<Tag> tags) {
-        Movement m = new BasicMovement(description, date, amount, income, tags);
-        movements.add(m);
-
-        MovementEntity movementEntity = MovementMapper.toEntity(m);
-
-        dao.saveMovementAsync(movementEntity)
-                .thenRun(() -> System.out.println("Salvataggio completato"))
-                .exceptionally(ex -> {
-                    ex.printStackTrace();
-                    return null;
-                });
-    }
+    MovementRepository movementRepository = new MovementRepository();
+    private final TagRepository tagRepository = new TagRepository();
 
     public List<Movement> getAllMovements() {
         return new ArrayList<>(movements);
@@ -49,15 +37,23 @@ public class MovementController {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public CompletionStage<Void> addMovementAsync(String description, LocalDate date, BigDecimal amount, boolean income, List<Tag> tags) {
-        Movement m = new BasicMovement(description, date, amount, income, tags);
+    private List<Tag> convertToModelTags(List<TagEntity> tagEntities) {
+        if (tagEntities == null) return List.of();
+        return tagEntities.stream()
+                .map(e -> new Tag(e.getName()))
+                .toList();
+    }
+
+    public CompletionStage<Void> addMovementAsync(String description, LocalDate date, BigDecimal amount, boolean income, List<TagEntity> tags) {
+        Movement m = new BasicMovement(description, date, amount, income, convertToModelTags(tags));
         MovementEntity entity = MovementMapper.toEntity(m);
-        return dao.saveMovementAsync(entity)
+        entity.setTags(tags);
+        return movementRepository.saveMovementAsync(entity)
                 .thenCompose(v -> loadMovementsAsync());
     }
 
     public CompletionStage<Void> loadMovementsAsync() {
-        return dao.loadAllMovementsAsync()
+        return movementRepository.loadAllMovementsAsync()
                 .thenAccept(entities -> {
                     synchronized (movements) {
                         movements.clear();
@@ -69,12 +65,16 @@ public class MovementController {
     }
 
     public CompletionStage<Void> removeMovementAsync(UUID id) {
-        return dao.deleteMovementAsync(id)
+        return movementRepository.deleteMovementAsync(id)
                 .thenRun(() -> {
                     synchronized (movements) {
                         movements.removeIf(m -> m.getId().equals(id));
                     }
                 });
+    }
+
+    public CompletionStage<List<TagEntity>> loadTagsAsync() {
+        return tagRepository.loadAllTagsAsync();
     }
 
 }

@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.MovementViewController"
+      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.MovementView"
       spacing="10" alignment="CENTER" style="-fx-padding: 20;">
 
     <Label text="Aggiungi Movimento" style="-fx-font-size: 18px;"/>
@@ -12,6 +12,10 @@
     <TextField fx:id="amountField" promptText="Importo"/>
     <DatePicker fx:id="datePicker"/>
     <CheckBox fx:id="incomeCheckBox" text="Entrata"/>
+
+    <Label text="Seleziona Tag:"/>
+    <ListView fx:id="tagListView" prefHeight="120" prefWidth="250"/>
+
     <Button text="Aggiungi" onAction="#handleAddMovement"/>
     <Button fx:id="deleteButton" text="Elimina Movimento" onAction="#handleDeleteMovement"/>
 
@@ -22,6 +26,9 @@
             <TableColumn text="Data" fx:id="colDate"/>
             <TableColumn text="Importo" fx:id="colAmount"/>
             <TableColumn text="Tipo" fx:id="colType"/>
+            <TableColumn text="Tag" fx:id="colTags"/>
         </columns>
     </TableView>
+
+    <Button text="Torna al Main" onAction="#handleBackToMain"/>
 </VBox>

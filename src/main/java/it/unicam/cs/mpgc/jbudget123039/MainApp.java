@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.jbudget123039;
 
-import it.unicam.cs.mpgc.jbudget123039.view.MainViewController;
+import it.unicam.cs.mpgc.jbudget123039.view.MainView;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -11,8 +11,6 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main.fxml"));
         Scene scene = new Scene(loader.load());
-        MainViewController controller = loader.getController();
-        controller.setStage(stage);
         stage.setTitle("Gestione Budget Familiare");
         stage.setScene(scene);
         stage.show();

@@ -1,6 +1,9 @@
-package it.unicam.cs.mpgc.jbudget123039.model.movement;
+package it.unicam.cs.mpgc.jbudget123039.persistence.entity;
+
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -11,26 +14,25 @@ import java.util.UUID;
 public class MovementEntity {
 
     @Id
-    @Column(columnDefinition = "BINARY(16)")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     private String description;
-
     private LocalDate date;
-
     private BigDecimal amount;
-
     private boolean income;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "movement_tags",
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "movement_tags",
             joinColumns = @JoinColumn(name = "movement_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<TagEntity> tags;
 
     public MovementEntity() {
-        if (id == null) {
-            id = UUID.randomUUID();
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
         }
     }
 

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox spacing="10" alignment="CENTER" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.TagView">
+
+    <Label text="Gestione Tag" style="-fx-font-size: 18px;"/>
+    <TableView fx:id="tagTable" prefHeight="400" prefWidth="300">
+        <columns>
+            <TableColumn text="Nome" fx:id="colName" editable="true"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10">
+        <TextField fx:id="newTagName" promptText="Nuovo Tag"/>
+        <Button text="Aggiungi" onAction="#handleAddTag"/>
+        <Button text="Salva modifiche" onAction="#handleSaveChanges"/>
+        <Button text="Elimina selezionato" onAction="#handleDeleteTag"/>
+    </HBox>
+
+    <Button text="Torna al Main" onAction="#handleBackToMain"/>
+
+</VBox>

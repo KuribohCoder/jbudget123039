@@ -1,12 +1,25 @@
 package it.unicam.cs.mpgc.jbudget123039.mapper;
 
 import it.unicam.cs.mpgc.jbudget123039.model.movement.*;
-
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class MovementMapper {
+    public static MovementEntity scheduledToMovement(ScheduledMovementEntity scheduled) {
+        MovementEntity entity = new MovementEntity();
+        entity.setId(UUID.randomUUID()); // nuovo ID
+        entity.setDescription(scheduled.getDescription());
+        entity.setAmount(scheduled.getAmount());
+        entity.setDate(scheduled.getScheduledDate());
+        entity.setIncome(scheduled.isIncome());
+        entity.setTags(scheduled.getTags()); // attenzione: stesso riferimento, ok se immutabile
+
+        return entity;
+    }
     public static MovementEntity toEntity(Movement m) {
         MovementEntity e = new MovementEntity();
         if (m.getId() != null) {
@@ -37,13 +50,16 @@ public class MovementMapper {
                         .map(MovementMapper::tagToModel)
                         .collect(Collectors.toList());
 
-        return new BasicMovement(
+        BasicMovement movement = new BasicMovement(
                 e.getDescription(),
                 e.getDate(),
                 e.getAmount(),
                 e.isIncome(),
                 tags
         );
+        movement.setId(e.getId()); // 👈 fondamentale per l'eliminazione
+
+        return movement;
     }
 
     public static Tag tagToModel(TagEntity e) {

@@ -14,7 +14,9 @@ public class Tag {
 
     public void setParent(Tag parent) {
         this.parent = parent;
-        parent.addChild(this);
+        if (parent != null) {
+            parent.addChild(this);
+        }
     }
 
     public void addChild(Tag child) {

@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.jbudget123039.persistence;
 
-import it.unicam.cs.mpgc.jbudget123039.model.movement.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.repository.MovementRepository;
 import org.junit.jupiter.api.*;
 
 import jakarta.persistence.EntityManager;
@@ -12,15 +13,15 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MovementDAOTest {
+public class MovementRepositoryTest {
 
     private EntityManagerFactory emf;
-    private MovementDAO dao;
+    private MovementRepository dao;
 
     @BeforeAll
     public void setup() {
         emf = Persistence.createEntityManagerFactory("jbudgetPU");
-        dao = new MovementDAO();
+        dao = new MovementRepository();
     }
 
     @AfterAll
