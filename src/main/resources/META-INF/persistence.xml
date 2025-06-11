@@ -2,6 +2,7 @@
     <persistence-unit name="jbudgetPU" transaction-type="RESOURCE_LOCAL">
         <class>it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity</class>
         <class>it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity</class>
+        <class>it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity</class>
         <properties>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:./jbudgetdb"/>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>

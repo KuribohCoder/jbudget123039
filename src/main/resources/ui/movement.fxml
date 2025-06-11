@@ -17,6 +17,7 @@
     <ListView fx:id="tagListView" prefHeight="120" prefWidth="250"/>
 
     <Button text="Aggiungi" onAction="#handleAddMovement"/>
+    <Button text="Modifica Movimento" onAction="#handleUpdateMovement"/>
     <Button fx:id="deleteButton" text="Elimina Movimento" onAction="#handleDeleteMovement"/>
 
     <Label text="Movimenti" style="-fx-font-size: 16px;"/>

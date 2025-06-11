@@ -22,33 +22,62 @@ public class BasicMovement implements Movement {
         this.tags = tags;
     }
 
-    public UUID getId() { return id; }
-    public String getDescription() { return description; }
-    public LocalDate getDate() { return date; }
-    public BigDecimal getAmount() { return amount; }
-    public boolean isIncome() { return income; }
-    public List<Tag> getTags() { return tags; }
+    @Override
+    public UUID getId() {
+        return id;
+    }
 
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public LocalDate getDate() {
+        return date;
+    }
+
+    @Override
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    @Override
+    public boolean isIncome() {
+        return income;
+    }
+
+    @Override
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    @Override
     public void setId(UUID id) {
         this.id = id;
     }
 
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
 
+    @Override
     public void setDate(LocalDate date) {
         this.date = date;
     }
 
+    @Override
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
+    @Override
     public void setIncome(boolean income) {
         this.income = income;
     }
 
+    @Override
     public void setTags(List<Tag> tags) {
         this.tags = tags;
     }

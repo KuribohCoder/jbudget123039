@@ -15,7 +15,7 @@ public class TagController {
         return repository.loadAllTagsWithChildrenAsync();
     }
 
-    public CompletionStage<Void> saveOrUpdateTagAsync(TagEntity tag) {
+    public CompletionStage<TagEntity> saveOrUpdateTagAsync(TagEntity tag) {
         return repository.saveOrUpdateTagAsync(tag);
     }
 

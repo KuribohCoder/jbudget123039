@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.jbudget123039.persistence.repository;
 
+import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 import jakarta.persistence.EntityManager;
@@ -29,10 +30,14 @@ public class MovementRepository {
             try {
                 em.getTransaction().begin();
 
-                // Gestione dei tag per evitare errore "detached entity"
                 if (entity.getTags() != null && !entity.getTags().isEmpty()) {
                     List<TagEntity> managedTags = entity.getTags().stream()
-                            .map(tag -> em.getReference(TagEntity.class, tag.getId()))
+                            .map(tag -> {
+                                if (tag.getId() == null) {
+                                    throw new IllegalStateException("Tag without id found. Save tags before saving movement.");
+                                }
+                                return em.getReference(TagEntity.class, tag.getId());
+                            })
                             .toList();
                     entity.setTags(managedTags);
                 }
@@ -66,17 +71,46 @@ public class MovementRepository {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
-
-                System.out.println("Cerco entità con ID: " + id);
                 MovementEntity entity = em.find(MovementEntity.class, id);
 
-                if (entity == null) {
-                    System.out.println("⚠️ Movimento non trovato in DB!");
-                } else {
+                if (entity != null) {
                     em.remove(entity);
-                    System.out.println("✅ Movimento rimosso");
                 }
 
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                throw new RuntimeException(e);
+            } finally {
+                em.close();
+            }
+        }, executor);
+    }
+
+    public CompletionStage<Void> updateMovementAsync(MovementEntity movementEntity) {
+        return CompletableFuture.runAsync(() -> {
+            EntityManager em = emf.createEntityManager();
+            try {
+                em.getTransaction().begin();
+
+                if (movementEntity.getTags() != null && !movementEntity.getTags().isEmpty()) {
+                    List<TagEntity> managedTags = movementEntity.getTags().stream()
+                            .map(tag -> {
+                                if (tag.getId() == null) {
+                                    throw new IllegalStateException("Tag without ID found.");
+                                }
+                                TagEntity managedTag = em.find(TagEntity.class, tag.getId());
+                                if (managedTag == null) {
+                                    em.persist(tag);
+                                    managedTag = tag;
+                                }
+                                return managedTag;
+                            })
+                            .toList();
+                    movementEntity.setTags(managedTags);
+                }
+
+                em.merge(movementEntity);
                 em.getTransaction().commit();
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();

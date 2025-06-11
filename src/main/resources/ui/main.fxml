@@ -10,11 +10,10 @@
     <center>
         <VBox spacing="10" alignment="CENTER" style="-fx-padding: 20;">
             <Button text="Movimenti" onAction="#showMovements"/>
+            <Button text="Ammortamento" onAction="#showAmortization"/>
             <Button text="Tag" onAction="#showTags"/>
-            <Button text="Gestione Tag Gerarchica" onAction="#showTagHierarchy"/>
             <Button text="Budget" onAction="#showBudget"/>
             <Button text="Statistiche" onAction="#showStatistics"/>
-            <Button text="Ammortamento" onAction="#showAmortization"/>
         </VBox>
     </center>
 </BorderPane>

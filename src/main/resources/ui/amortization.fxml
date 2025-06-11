@@ -1,14 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="it.unicam.cs.mpgc.jbudget123039.controller.LoadAmortizationController"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.AmortizationView"
+      spacing="10" alignment="CENTER" style="-fx-padding: 20;">
 
-</AnchorPane>
+    <Label text="Crea Piano di Ammortamento" style="-fx-font-size: 18px;"/>
+
+    <TextField fx:id="nomePianoField" promptText="Nome piano es: Prestito Auto"/>
+    <TextField fx:id="importoField" promptText="Importo totale"/>
+    <TextField fx:id="rateField" promptText="Numero rate"/>
+    <TextField fx:id="interesseField" promptText="Interesse %"/>
+    <DatePicker fx:id="dataInizioPicker"/>
+
+    <Label text="Seleziona Tag:"/>
+    <ListView fx:id="tagListView" prefHeight="120" prefWidth="250"/>
+
+    <HBox spacing="10">
+        <Button text="Crea Ammortamento" onAction="#handleCreaAmmortamento"/>
+        <Button text="Modifica Ammortamento" onAction="#handleModificaRata"/>
+        <Button text="Elimina Ammortamento" onAction="#handleEliminaRata"/>
+        <Button text="Torna al Menu" onAction="#handleBackToMain"/>
+    </HBox>
+
+    <TableView fx:id="rataTable" prefHeight="300" prefWidth="600">
+        <columns>
+            <TableColumn fx:id="colDescrizione" text="Descrizione" prefWidth="200"/>
+            <TableColumn fx:id="colData" text="Data" prefWidth="100"/>
+            <TableColumn fx:id="colImporto" text="Importo" prefWidth="100"/>
+            <TableColumn fx:id="colTipo" text="Entrata" prefWidth="100"/>
+            <TableColumn fx:id="colTags" text="Tag" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

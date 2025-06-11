@@ -5,11 +5,11 @@ import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class TagMapper {
 
-    // Converte da TagEntity a Tag (model), gestendo ricorsione per gerarchia
     public static Tag toModel(TagEntity entity) {
         if (entity == null) return null;
 
@@ -25,11 +25,17 @@ public class TagMapper {
         return tag;
     }
 
-    // Converte da Tag (model) a TagEntity, ricorsivamente per gerarchia
     public static TagEntity toEntity(Tag tag) {
         if (tag == null) return null;
 
         TagEntity entity = new TagEntity();
+
+        if (tag.getId() != null) {
+            entity.setId(tag.getId());
+        } else {
+            entity.setId(UUID.randomUUID());
+        }
+
         entity.setName(tag.getName());
 
         if (tag.getChildren() != null && !tag.getChildren().isEmpty()) {
@@ -42,11 +48,22 @@ public class TagMapper {
             entity.setChildren(childrenEntities);
         }
 
-        // Gestione parent se presente
         if (tag.getParent() != null) {
             entity.setParent(toEntity(tag.getParent()));
         }
 
         return entity;
+    }
+
+    public static List<TagEntity> toEntityTagList(List<Tag> tags) {
+        return (tags == null) ? List.of() : tags.stream()
+                .map(MovementMapper::tagToEntity)
+                .collect(Collectors.toList());
+    }
+
+    public static List<Tag> toModelTagList(List<TagEntity> tagEntities) {
+        return (tagEntities == null) ? List.of() : tagEntities.stream()
+                .map(MovementMapper::tagToModel)
+                .collect(Collectors.toList());
     }
 }

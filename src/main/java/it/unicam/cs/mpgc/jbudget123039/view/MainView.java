@@ -42,12 +42,6 @@ public class MainView {
         switchScene("/ui/amortization.fxml", "Piano di Ammortamento", stage);
     }
 
-    @FXML
-    private void showTagHierarchy() {
-        Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/tag_hierarchy.fxml", "Gestione Tag Gerarchica", stage);
-    }
-
     private void switchScene(String path, String title, Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));

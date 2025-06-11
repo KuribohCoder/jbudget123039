@@ -18,17 +18,14 @@ public class TagRepository {
     private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("jbudgetPU");
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
-    public CompletionStage<Void> saveOrUpdateTagAsync(TagEntity tag) {
-        return CompletableFuture.runAsync(() -> {
+    public CompletionStage<TagEntity> saveOrUpdateTagAsync(TagEntity entity) {
+        return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
-                if (tag.getId() == null) {
-                    em.persist(tag);
-                } else {
-                    em.merge(tag);
-                }
+                TagEntity managed = em.merge(entity);
                 em.getTransaction().commit();
+                return managed;
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
                 throw new RuntimeException(e);
@@ -70,12 +67,15 @@ public class TagRepository {
 
                 TagEntity tag = em.find(TagEntity.class, id);
                 if (tag != null) {
-                    // Dissocia il tag da tutti i movimenti
-                    tag.getMovements().forEach(movement -> movement.getTags().remove(tag));
+                    if (tag.getMovements() != null) {
+                        tag.getMovements().forEach(m -> m.getTags().remove(tag));
+                    }
 
-                    // Optional: rimuovi anche eventuali figli se presenti
-                    if (tag.getChildren() != null) {
-                        tag.getChildren().forEach(child -> child.setParent(null));
+                    if (tag.getParent() != null) {
+                        TagEntity parent = tag.getParent();
+                        parent.getChildren().remove(tag);
+                        tag.setParent(null);
+                        em.merge(parent);
                     }
 
                     em.remove(tag);
@@ -91,8 +91,23 @@ public class TagRepository {
         }, executor);
     }
 
+    public CompletionStage<TagEntity> findByNameAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            EntityManager em = emf.createEntityManager();
+            try {
+                List<TagEntity> results = em.createQuery("SELECT t FROM TagEntity t WHERE t.name = :name", TagEntity.class)
+                        .setParameter("name", name)
+                        .getResultList();
+                return results.isEmpty() ? null : results.get(0);
+            } finally {
+                em.close();
+            }
+        }, executor);
+    }
     public void shutdown() {
         executor.shutdown();
         emf.close();
     }
+
+
 }

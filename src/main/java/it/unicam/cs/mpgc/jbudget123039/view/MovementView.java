@@ -2,26 +2,25 @@ package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.MovementController;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.Tag;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
-
 import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.*;
 
-import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
 
 public class MovementView {
 
@@ -44,10 +43,9 @@ public class MovementView {
     @FXML
     private TableColumn<Movement, String> colType;
     @FXML
-    private ListView<TagEntity> tagListView;
-
-    @FXML
     private TableColumn<Movement, String> colTags;
+    @FXML
+    private ListView<TagEntity> tagListView;
 
     private final MovementController controller = new MovementController();
     private final ObservableList<Movement> movements = FXCollections.observableArrayList();
@@ -61,12 +59,10 @@ public class MovementView {
         colAmount.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getAmount()));
         colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().isIncome() ? "Entrata" : "Uscita"));
         colTags.setCellValueFactory(data -> {
-            List<String> tagNames = data.getValue().getTags().stream()
-                    .map(tag -> tag.getName())
-                    .toList();
-            String tagsConcatenated = String.join(", ", tagNames);
-            return new SimpleStringProperty(tagsConcatenated);
+            List<String> tagNames = data.getValue().getTags().stream().map(Tag::getName).toList();
+            return new SimpleStringProperty(String.join(", ", tagNames));
         });
+
         movementTable.setItems(movements);
 
         controller.loadMovementsAsync()
@@ -105,7 +101,8 @@ public class MovementView {
             BigDecimal amount = new BigDecimal(amountField.getText());
             LocalDate date = datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now();
             boolean income = incomeCheckBox.isSelected();
-            List<TagEntity> selectedTags = List.copyOf(tagListView.getSelectionModel().getSelectedItems());
+            List<TagEntity> selectedTagEntities = tagListView.getSelectionModel().getSelectedItems();
+            List<Tag> selectedTags = convertToModelTags(selectedTagEntities);
 
             controller.addMovementAsync(description, date, amount, income, selectedTags)
                     .thenCompose(v -> controller.loadMovementsAsync())
@@ -123,6 +120,13 @@ public class MovementView {
         }
     }
 
+    private List<Tag> convertToModelTags(List<TagEntity> entities) {
+        return entities == null ? List.of() :
+                entities.stream()
+                        .map(e -> new Tag(e.getName()))
+                        .toList();
+    }
+
     @FXML
     private void handleDeleteMovement() {
         Movement selected = movementTable.getSelectionModel().getSelectedItem();
@@ -131,12 +135,9 @@ public class MovementView {
             return;
         }
 
-        System.out.println("Premuto Elimina, ID: " + selected.getId());
-
         controller.removeMovementAsync(selected.getId())
                 .thenCompose(v -> controller.loadMovementsAsync())
                 .thenRun(() -> Platform.runLater(() -> {
-                    System.out.println("Refresh dopo eliminazione");
                     movements.setAll(controller.getAllMovements());
                     movementTable.refresh();
                 }))
@@ -145,6 +146,51 @@ public class MovementView {
                     Platform.runLater(() -> showError("Errore nella cancellazione: " + ex.getMessage()));
                     return null;
                 });
+    }
+
+    @FXML
+    private void handleUpdateMovement() {
+        Movement selected = movementTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Seleziona un movimento da modificare.");
+            return;
+        }
+
+        try {
+            if (!descriptionField.getText().isBlank()) {
+                selected.setDescription(descriptionField.getText());
+            }
+
+            if (!amountField.getText().isBlank()) {
+                selected.setAmount(new BigDecimal(amountField.getText()));
+            }
+
+            if (datePicker.getValue() != null) {
+                selected.setDate(datePicker.getValue());
+            }
+
+            selected.setIncome(incomeCheckBox.isSelected());
+
+            List<TagEntity> selectedTagEntities = tagListView.getSelectionModel().getSelectedItems();
+            if (!selectedTagEntities.isEmpty()) {
+                selected.setTags(convertToModelTags(selectedTagEntities));
+            }
+
+            controller.updateMovementAsync(selected)
+                    .thenCompose(v -> controller.loadMovementsAsync())
+                    .thenRun(() -> Platform.runLater(() -> {
+                        movements.setAll(controller.getAllMovements());
+                        movementTable.refresh();
+                        clearForm();
+                    }))
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        Platform.runLater(() -> showError("Errore durante la modifica: " + ex.getMessage()));
+                        return null;
+                    });
+        } catch (Exception e) {
+            showError("Errore nei dati inseriti: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -160,5 +206,4 @@ public class MovementView {
         incomeCheckBox.setSelected(false);
         tagListView.getSelectionModel().clearSelection();
     }
-
 }

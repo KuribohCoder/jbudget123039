@@ -23,11 +23,9 @@ public class MovementEntity {
     private boolean income;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "movement_tags",
+    @JoinTable(name = "movement_tags",
             joinColumns = @JoinColumn(name = "movement_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagEntity> tags;
 
     public MovementEntity() {
