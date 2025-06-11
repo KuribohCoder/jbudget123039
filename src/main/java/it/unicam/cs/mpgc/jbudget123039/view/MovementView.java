@@ -2,9 +2,8 @@ package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.MovementController;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
-import it.unicam.cs.mpgc.jbudget123039.model.movement.Tag;
-import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
-import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
+import it.unicam.cs.mpgc.jbudget123039.util.DateUtil;
 import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.*;
@@ -45,12 +44,11 @@ public class MovementView {
     @FXML
     private TableColumn<Movement, String> colTags;
     @FXML
-    private ListView<TagEntity> tagListView;
+    private ListView<Tag> tagListView;
 
     private final MovementController controller = new MovementController();
     private final ObservableList<Movement> movements = FXCollections.observableArrayList();
-    private final ObservableList<TagEntity> tags = FXCollections.observableArrayList();
-    private final TagRepository tagRepository = new TagRepository();
+    private final ObservableList<Tag> tags = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
@@ -65,9 +63,9 @@ public class MovementView {
 
         movementTable.setItems(movements);
 
-        controller.loadMovementsAsync()
-                .thenRun(() -> Platform.runLater(() -> {
-                    movements.setAll(controller.getAllMovements());
+        controller.loadAllMovementsAsync()
+                .thenAccept(list -> Platform.runLater(() -> {
+                    movements.setAll(list);
                     movementTable.refresh();
                 }))
                 .exceptionally(ex -> {
@@ -75,13 +73,13 @@ public class MovementView {
                     return null;
                 });
 
-        tagRepository.loadAllTagsAsync()
+        controller.loadAllTagsAsync()
                 .thenAccept(loadedTags -> Platform.runLater(() -> {
                     tags.setAll(loadedTags);
                     tagListView.setItems(tags);
                     tagListView.setCellFactory(param -> new ListCell<>() {
                         @Override
-                        protected void updateItem(TagEntity item, boolean empty) {
+                        protected void updateItem(Tag item, boolean empty) {
                             super.updateItem(item, empty);
                             setText((item == null || empty) ? "" : item.getName());
                         }
@@ -99,15 +97,14 @@ public class MovementView {
         try {
             String description = descriptionField.getText();
             BigDecimal amount = new BigDecimal(amountField.getText());
-            LocalDate date = datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now();
+            LocalDate date = DateUtil.getOrDefault(datePicker.getValue());
             boolean income = incomeCheckBox.isSelected();
-            List<TagEntity> selectedTagEntities = tagListView.getSelectionModel().getSelectedItems();
-            List<Tag> selectedTags = convertToModelTags(selectedTagEntities);
+            List<Tag> selectedTags = tagListView.getSelectionModel().getSelectedItems();
 
             controller.addMovementAsync(description, date, amount, income, selectedTags)
-                    .thenCompose(v -> controller.loadMovementsAsync())
-                    .thenRun(() -> Platform.runLater(() -> {
-                        movements.setAll(controller.getAllMovements());
+                    .thenCompose(v -> controller.loadAllMovementsAsync())
+                    .thenAccept(list -> Platform.runLater(() -> {
+                        movements.setAll(list);
                         movementTable.refresh();
                         clearForm();
                     }))
@@ -120,13 +117,6 @@ public class MovementView {
         }
     }
 
-    private List<Tag> convertToModelTags(List<TagEntity> entities) {
-        return entities == null ? List.of() :
-                entities.stream()
-                        .map(e -> new Tag(e.getName()))
-                        .toList();
-    }
-
     @FXML
     private void handleDeleteMovement() {
         Movement selected = movementTable.getSelectionModel().getSelectedItem();
@@ -135,10 +125,10 @@ public class MovementView {
             return;
         }
 
-        controller.removeMovementAsync(selected.getId())
-                .thenCompose(v -> controller.loadMovementsAsync())
-                .thenRun(() -> Platform.runLater(() -> {
-                    movements.setAll(controller.getAllMovements());
+        controller.deleteMovementAsync(selected.getId())
+                .thenCompose(v -> controller.loadAllMovementsAsync())
+                .thenAccept(list -> Platform.runLater(() -> {
+                    movements.setAll(list);
                     movementTable.refresh();
                 }))
                 .exceptionally(ex -> {
@@ -160,26 +150,23 @@ public class MovementView {
             if (!descriptionField.getText().isBlank()) {
                 selected.setDescription(descriptionField.getText());
             }
-
             if (!amountField.getText().isBlank()) {
                 selected.setAmount(new BigDecimal(amountField.getText()));
             }
-
             if (datePicker.getValue() != null) {
                 selected.setDate(datePicker.getValue());
             }
-
             selected.setIncome(incomeCheckBox.isSelected());
 
-            List<TagEntity> selectedTagEntities = tagListView.getSelectionModel().getSelectedItems();
-            if (!selectedTagEntities.isEmpty()) {
-                selected.setTags(convertToModelTags(selectedTagEntities));
+            List<Tag> selectedTags = tagListView.getSelectionModel().getSelectedItems();
+            if (!selectedTags.isEmpty()) {
+                selected.setTags(selectedTags);
             }
 
             controller.updateMovementAsync(selected)
-                    .thenCompose(v -> controller.loadMovementsAsync())
-                    .thenRun(() -> Platform.runLater(() -> {
-                        movements.setAll(controller.getAllMovements());
+                    .thenCompose(v -> controller.loadAllMovementsAsync())
+                    .thenAccept(list -> Platform.runLater(() -> {
+                        movements.setAll(list);
                         movementTable.refresh();
                         clearForm();
                     }))

@@ -20,13 +20,10 @@ public class ScheduledMovementEntity {
     private boolean income;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "scheduled_movement_tags",
-            joinColumns = @JoinColumn(name = "scheduled_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JoinTable(name = "scheduled_movement_tags", joinColumns = @JoinColumn(name = "scheduled_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagEntity> tags;
 
     public ScheduledMovementEntity() {
-        if (this.id == null) this.id = UUID.randomUUID();
     }
 
     public UUID getId() {

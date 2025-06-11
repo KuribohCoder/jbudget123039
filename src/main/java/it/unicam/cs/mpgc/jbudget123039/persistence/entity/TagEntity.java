@@ -1,8 +1,8 @@
 package it.unicam.cs.mpgc.jbudget123039.persistence.entity;
 
 import jakarta.persistence.*;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
 
 @Entity
 @Table(name = "tags")
@@ -15,25 +15,18 @@ public class TagEntity {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
-    private List<MovementEntity> movements;
+    private Set<MovementEntity> movements = new HashSet<>();
+
+    @ManyToMany(mappedBy = "tags")
+    private Set<ScheduledMovementEntity> scheduledMovements = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private TagEntity parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<TagEntity> children;
+    private List<TagEntity> children = new ArrayList<>();
 
-    public TagEntity() {
-        if (this.id == null) {
-            this.id = UUID.randomUUID();
-        }
-    }
-
-    public TagEntity(String name) {
-        this();
-        this.name = name;
-    }
 
     public UUID getId() {
         return id;
@@ -51,11 +44,15 @@ public class TagEntity {
         this.name = name;
     }
 
-    public List<MovementEntity> getMovements() {
+    public Set<MovementEntity> getMovements() {
         return movements;
     }
 
-    public void setMovements(List<MovementEntity> movements) {
+    public Set<ScheduledMovementEntity> getScheduledMovements() {
+        return scheduledMovements;
+    }
+
+    public void setMovements(Set<MovementEntity> movements) {
         this.movements = movements;
     }
 
@@ -72,11 +69,12 @@ public class TagEntity {
     }
 
     public void setChildren(List<TagEntity> children) {
-        this.children = children;
-    }
-
-    @Override
-    public String toString() {
-        return name;
+        this.children.clear();
+        if (children != null) {
+            for (TagEntity child : children) {
+                child.setParent(this);
+                this.children.add(child);
+            }
+        }
     }
 }

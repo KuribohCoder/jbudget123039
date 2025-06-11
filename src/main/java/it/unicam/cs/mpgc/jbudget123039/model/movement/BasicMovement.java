@@ -1,5 +1,7 @@
 package it.unicam.cs.mpgc.jbudget123039.model.movement;
 
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

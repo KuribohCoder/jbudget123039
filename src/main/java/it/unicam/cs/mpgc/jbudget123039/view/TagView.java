@@ -1,7 +1,9 @@
 package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.TagController;
-import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
+import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.service.TagService;
 import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.*;
@@ -13,54 +15,44 @@ import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class TagView {
 
     @FXML
-    private TreeView<TagEntity> tagTreeView;
+    private TreeView<Tag> tagTreeView;
 
-    private final TagController tagController = new TagController();
+    private final TagRepository tagRepository = new TagRepository();
+    private final TagService tagService = new TagService(tagRepository);
+    private final TagController tagController = new TagController(tagService);
+
 
     @FXML
     public void initialize() {
         tagTreeView.setEditable(true);
 
-        // Imposta la cell factory con il converter
         tagTreeView.setCellFactory(tv -> new TextFieldTreeCell<>(new StringConverter<>() {
             @Override
-            public String toString(TagEntity tag) {
+            public String toString(Tag tag) {
                 return tag == null ? "" : tag.getName();
             }
 
             @Override
-            public TagEntity fromString(String string) {
-                // non usato qui, può restare null o come vuoi
-                return null;
-            }
-        }));
-
-        // Gestisci commit editing a livello di TreeView (non sulla cella)
-        tagTreeView.setCellFactory(tv -> new TextFieldTreeCell<>(new StringConverter<TagEntity>() {
-            @Override
-            public String toString(TagEntity tag) {
-                return tag == null ? "" : tag.getName();
-            }
-
-            @Override
-            public TagEntity fromString(String newName) {
-                TreeItem<TagEntity> selectedItem = tagTreeView.getSelectionModel().getSelectedItem();
+            public Tag fromString(String newName) {
+                TreeItem<Tag> selectedItem = tagTreeView.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
-                    TagEntity tag = selectedItem.getValue();
+                    Tag tag = selectedItem.getValue();
                     tag.setName(newName);
 
-                    // Salva la modifica
-                    tagController.saveOrUpdateTagAsync(tag).exceptionally(ex -> {
-                        ex.printStackTrace();
-                        Platform.runLater(() -> showError("Errore nel salvataggio del tag"));
-                        return null;
-                    });
+                    tagController.saveOrUpdateTagAsync(tag)
+                            .exceptionally(ex -> {
+                                ex.printStackTrace();
+                                Platform.runLater(() -> showError("Errore nel salvataggio del tag"));
+                                return null;
+                            });
+
                     return tag;
                 }
                 return null;
@@ -73,24 +65,15 @@ public class TagView {
     private void loadTagHierarchy() {
         tagController.loadAllTagsWithChildrenAsync()
                 .thenAccept(tags -> Platform.runLater(() -> {
-                    // Costruisci mappa ID->TagEntity
-                    Map<UUID, TagEntity> tagMap = tags.stream()
-                            .collect(Collectors.toMap(TagEntity::getId, t -> t));
+                    List<Tag> rootTags = tags.stream()
+                            .filter(tag -> tag.getParent() == null)
+                            .collect(Collectors.toList());
 
-                    // Costruisci radici (tag senza parent)
-                    List<TagEntity> roots = new ArrayList<>();
-                    for (TagEntity tag : tags) {
-                        if (tag.getParent() == null) {
-                            roots.add(tag);
-                        }
-                    }
-
-                    // Costruisci albero
-                    TreeItem<TagEntity> rootItem = new TreeItem<>(new TagEntity());
+                    TreeItem<Tag> rootItem = new TreeItem<>(new Tag("ROOT"));
                     rootItem.setExpanded(true);
 
-                    for (TagEntity rootTag : roots) {
-                        rootItem.getChildren().add(buildTreeItem(rootTag, tagMap));
+                    for (Tag root : rootTags) {
+                        rootItem.getChildren().add(buildTreeItem(root));
                     }
 
                     tagTreeView.setRoot(rootItem);
@@ -103,22 +86,20 @@ public class TagView {
                 });
     }
 
-    private TreeItem<TagEntity> buildTreeItem(TagEntity tag, Map<UUID, TagEntity> tagMap) {
-        TreeItem<TagEntity> item = new TreeItem<>(tag);
+    private TreeItem<Tag> buildTreeItem(Tag tag) {
+        TreeItem<Tag> item = new TreeItem<>(tag);
         item.setExpanded(true);
 
-        // Aggiungi figli
-        for (TagEntity child : tag.getChildren()) {
-            item.getChildren().add(buildTreeItem(child, tagMap));
+        for (Tag child : tag.getChildren()) {
+            item.getChildren().add(buildTreeItem(child));
         }
+
         return item;
     }
 
     @FXML
     private void handleAddRootTag() {
-        TagEntity newTag = new TagEntity();
-        newTag.setName("Nuovo Tag");
-        newTag.setParent(null);
+        Tag newTag = new Tag("Nuovo Tag");
 
         tagController.saveOrUpdateTagAsync(newTag)
                 .thenRun(this::loadTagHierarchy)
@@ -131,15 +112,14 @@ public class TagView {
 
     @FXML
     private void handleAddChildTag() {
-        TreeItem<TagEntity> selected = tagTreeView.getSelectionModel().getSelectedItem();
+        TreeItem<Tag> selected = tagTreeView.getSelectionModel().getSelectedItem();
         if (selected == null) {
             showError("Seleziona un tag a cui aggiungere un figlio");
             return;
         }
-        TagEntity parent = selected.getValue();
 
-        TagEntity newTag = new TagEntity();
-        newTag.setName("Nuovo Sottotag");
+        Tag parent = selected.getValue();
+        Tag newTag = new Tag("Nuovo Sottotag");
         newTag.setParent(parent);
 
         tagController.saveOrUpdateTagAsync(newTag)
@@ -153,14 +133,14 @@ public class TagView {
 
     @FXML
     private void handleDeleteTag() {
-        TreeItem<TagEntity> selected = tagTreeView.getSelectionModel().getSelectedItem();
+        TreeItem<Tag> selected = tagTreeView.getSelectionModel().getSelectedItem();
         if (selected == null || selected.getValue().getId() == null) {
             showError("Seleziona un tag da eliminare");
             return;
         }
 
-        TagEntity tag = selected.getValue();
-        tagController.deleteTagAsync(tag.getId())
+        UUID id = selected.getValue().getId();
+        tagController.deleteTagAsync(id)
                 .thenRun(this::loadTagHierarchy)
                 .exceptionally(ex -> {
                     ex.printStackTrace();

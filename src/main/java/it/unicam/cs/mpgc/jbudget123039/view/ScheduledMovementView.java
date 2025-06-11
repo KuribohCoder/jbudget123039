@@ -1,11 +1,10 @@
 package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.ScheduledMovementController;
-import it.unicam.cs.mpgc.jbudget123039.mapper.ScheduledMovementMapper;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
-import it.unicam.cs.mpgc.jbudget123039.model.movement.Tag;
-import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
-import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
+import it.unicam.cs.mpgc.jbudget123039.util.DateUtil;
+import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.*;
 
@@ -23,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AmortizationView {
+public class ScheduledMovementView {
 
     @FXML private TextField importoField;
     @FXML private TextField rateField;
@@ -38,15 +37,14 @@ public class AmortizationView {
     @FXML private TableColumn<ScheduledMovement, String> colTags;
 
     @FXML private TextField nomePianoField;
-    @FXML private ListView<TagEntity> tagListView;
+    @FXML private ListView<Tag> tagListView;
 
     @FXML private Button eliminaButton;
 
     private final ObservableList<ScheduledMovement> rateList = FXCollections.observableArrayList();
     private final ScheduledMovementController controller = new ScheduledMovementController();
 
-    private final TagRepository tagRepository = new TagRepository();
-    private final ObservableList<TagEntity> tagList = FXCollections.observableArrayList();
+    private final ObservableList<Tag> tagList = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
@@ -76,13 +74,13 @@ public class AmortizationView {
                     return null;
                 });
 
-        tagRepository.loadAllTagsAsync()
+        controller.loadAllTagsAsync()
                 .thenAccept(loadedTags -> Platform.runLater(() -> {
                     tagList.setAll(loadedTags);
                     tagListView.setItems(tagList);
                     tagListView.setCellFactory(param -> new ListCell<>() {
                         @Override
-                        protected void updateItem(TagEntity item, boolean empty) {
+                        protected void updateItem(Tag item, boolean empty) {
                             super.updateItem(item, empty);
                             setText((item == null || empty) ? "" : item.getName());
                         }
@@ -106,11 +104,13 @@ public class AmortizationView {
             BigDecimal importoTotale = new BigDecimal(importoField.getText());
             int numeroRate = Integer.parseInt(rateField.getText());
             BigDecimal interessePercentuale = new BigDecimal(interesseField.getText());
-            LocalDate dataInizio = dataInizioPicker.getValue();
+            LocalDate dataInizio = DateUtil.getOrDefault(dataInizioPicker.getValue());
 
             BigDecimal interesse = interessePercentuale.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-            BigDecimal quotaInteresse = importoTotale.multiply(interesse).divide(BigDecimal.valueOf(numeroRate), 2, RoundingMode.HALF_UP);
-            BigDecimal quotaRimborso = importoTotale.divide(BigDecimal.valueOf(numeroRate), 2, RoundingMode.HALF_UP);
+            BigDecimal quotaInteresse = importoTotale.multiply(interesse)
+                    .divide(BigDecimal.valueOf(numeroRate), 2, RoundingMode.HALF_UP);
+            BigDecimal quotaRimborso = importoTotale
+                    .divide(BigDecimal.valueOf(numeroRate), 2, RoundingMode.HALF_UP);
 
             for (int i = 0; i < numeroRate; i++) {
                 BigDecimal importoRata = quotaRimborso.add(quotaInteresse);
@@ -123,10 +123,8 @@ public class AmortizationView {
                 rata.setScheduledDate(dataRata);
 
                 List<Tag> selectedTags = tagListView.getSelectionModel()
-                        .getSelectedItems()
-                        .stream()
-                        .map(te -> new Tag(te.getName()))
-                        .collect(Collectors.toList());
+                        .getSelectedItems();
+
                 rata.setTags(selectedTags);
 
                 final int rataIndex = i;
@@ -203,10 +201,7 @@ public class AmortizationView {
             }
 
             List<Tag> selectedTags = tagListView.getSelectionModel()
-                    .getSelectedItems()
-                    .stream()
-                    .map(te -> new Tag(te.getName()))
-                    .collect(Collectors.toList());
+                    .getSelectedItems();
             if (!selectedTags.isEmpty()) {
                 selected.setTags(selectedTags);
             }
@@ -236,6 +231,6 @@ public class AmortizationView {
     @FXML
     private void handleBackToMain() {
         javafx.stage.Stage stage = (javafx.stage.Stage) importoField.getScene().getWindow();
-        it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
+        SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
     }
 }

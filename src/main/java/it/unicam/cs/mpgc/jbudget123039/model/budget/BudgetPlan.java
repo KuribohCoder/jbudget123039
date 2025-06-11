@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.jbudget123039.model.budget;
 
-import it.unicam.cs.mpgc.jbudget123039.model.movement.Tag;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;

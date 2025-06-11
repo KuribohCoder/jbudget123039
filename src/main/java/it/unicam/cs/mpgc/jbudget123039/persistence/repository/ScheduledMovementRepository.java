@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.jbudget123039.persistence.repository;
 
-import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity;
+import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -24,12 +24,32 @@ public class ScheduledMovementRepository {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
-                if (entity.getId() == null) {
-                    entity.setId(UUID.randomUUID());
+
+                if (entity.getTags() != null && !entity.getTags().isEmpty()) {
+                    List<TagEntity> managedTags = entity.getTags().stream()
+                            .map(tag -> {
+                                if (tag.getId() == null) {
+                                    throw new IllegalStateException("Tag without id found.");
+                                }
+                                return em.getReference(TagEntity.class, tag.getId());
+                            })
+                            .toList();
+                    entity.setTags(managedTags);
+                }
+
+                ScheduledMovementEntity existing = entity.getId() != null
+                        ? em.find(ScheduledMovementEntity.class, entity.getId())
+                        : null;
+
+                if (existing == null) {
+                    if (entity.getId() == null) {
+                        entity.setId(UUID.randomUUID()); // fallback
+                    }
                     em.persist(entity);
                 } else {
                     em.merge(entity);
                 }
+
                 em.getTransaction().commit();
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();

@@ -24,6 +24,7 @@ public class TagRepository {
             try {
                 em.getTransaction().begin();
                 TagEntity managed = em.merge(entity);
+                em.flush(); // forza l'invio immediato al DB
                 em.getTransaction().commit();
                 return managed;
             } catch (Exception e) {
@@ -91,11 +92,33 @@ public class TagRepository {
         }, executor);
     }
 
+    public CompletionStage<TagEntity> findByIdAsync(UUID id) {
+        return CompletableFuture.supplyAsync(() -> {
+            EntityManager em = emf.createEntityManager();
+            try {
+                List<TagEntity> results = em.createQuery(
+                                "SELECT t FROM TagEntity t " +
+                                        "LEFT JOIN FETCH t.movements " +
+                                        "LEFT JOIN FETCH t.scheduledMovements " +
+                                        "WHERE t.id = :id", TagEntity.class)
+                        .setParameter("id", id)
+                        .getResultList();
+                return results.isEmpty() ? null : results.get(0);
+            } finally {
+                em.close();
+            }
+        }, executor);
+    }
+
     public CompletionStage<TagEntity> findByNameAsync(String name) {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
-                List<TagEntity> results = em.createQuery("SELECT t FROM TagEntity t WHERE t.name = :name", TagEntity.class)
+                List<TagEntity> results = em.createQuery(
+                                "SELECT t FROM TagEntity t " +
+                                        "LEFT JOIN FETCH t.movements " +
+                                        "LEFT JOIN FETCH t.scheduledMovements " +
+                                        "WHERE t.name = :name", TagEntity.class)
                         .setParameter("name", name)
                         .getResultList();
                 return results.isEmpty() ? null : results.get(0);

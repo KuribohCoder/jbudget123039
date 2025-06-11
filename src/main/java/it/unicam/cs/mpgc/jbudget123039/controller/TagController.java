@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.jbudget123039.controller;
 
-import it.unicam.cs.mpgc.jbudget123039.persistence.entity.TagEntity;
-import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
+import it.unicam.cs.mpgc.jbudget123039.service.TagService;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,19 +9,26 @@ import java.util.concurrent.CompletionStage;
 
 public class TagController {
 
-    private final TagRepository repository = new TagRepository();
+    private final TagService tagService;
 
-    public CompletionStage<List<TagEntity>> loadAllTagsWithChildrenAsync() {
-        return repository.loadAllTagsWithChildrenAsync();
+    // Costruttore che riceve il service da iniettare (meglio per test e modularità)
+    public TagController(TagService tagService) {
+        this.tagService = tagService;
     }
 
-    public CompletionStage<TagEntity> saveOrUpdateTagAsync(TagEntity tag) {
-        return repository.saveOrUpdateTagAsync(tag);
+    public CompletionStage<List<Tag>> loadAllTagsWithChildrenAsync() {
+        return tagService.loadAllTags();
     }
 
+    public CompletionStage<Tag> saveOrUpdateTagAsync(Tag tag) {
+        return tagService.saveOrUpdateTag(tag);
+    }
 
     public CompletionStage<Void> deleteTagAsync(UUID id) {
-        return repository.deleteTagAsync(id);
+        return tagService.deleteTag(id);
     }
 
+    public CompletionStage<Tag> createTagIfNotExistsByName(String name) {
+        return tagService.createTagIfNotExistsByName(name);
+    }
 }

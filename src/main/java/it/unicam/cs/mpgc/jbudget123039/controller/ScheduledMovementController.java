@@ -1,54 +1,44 @@
 package it.unicam.cs.mpgc.jbudget123039.controller;
 
-import it.unicam.cs.mpgc.jbudget123039.mapper.MovementMapper;
-import it.unicam.cs.mpgc.jbudget123039.mapper.ScheduledMovementMapper;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
-import it.unicam.cs.mpgc.jbudget123039.persistence.repository.MovementRepository;
+import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
 import it.unicam.cs.mpgc.jbudget123039.persistence.repository.ScheduledMovementRepository;
+import it.unicam.cs.mpgc.jbudget123039.persistence.repository.TagRepository;
+import it.unicam.cs.mpgc.jbudget123039.service.ScheduledMovementService;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class ScheduledMovementController {
 
-    private final ScheduledMovementRepository scheduledRepo = new ScheduledMovementRepository();
-    private final MovementRepository movementRepo = new MovementRepository();
+    private final ScheduledMovementService scheduledMovementService;
 
-    public CompletionStage<Void> saveOrUpdateScheduledMovement(ScheduledMovement model) {
-        return scheduledRepo.saveOrUpdateScheduledMovementAsync(
-                ScheduledMovementMapper.toEntity(model)
+    public ScheduledMovementController() {
+        this.scheduledMovementService = new ScheduledMovementService(
+                new ScheduledMovementRepository(),
+                new TagRepository()
         );
     }
 
+    public CompletionStage<Void> saveOrUpdateScheduledMovement(ScheduledMovement model) {
+        return scheduledMovementService.saveOrUpdateScheduledMovement(model);
+    }
+
     public CompletionStage<List<ScheduledMovement>> loadAllScheduledMovements() {
-        return scheduledRepo.loadAllScheduledMovementsAsync()
-                .thenApply(entities ->
-                        entities.stream()
-                                .map(ScheduledMovementMapper::toModel)
-                                .toList()
-                );
+        return scheduledMovementService.loadAllScheduledMovements();
     }
 
     public CompletionStage<Void> deleteScheduledMovement(UUID id) {
-        return scheduledRepo.deleteScheduledMovementAsync(id);
+        return scheduledMovementService.deleteScheduledMovement(id);
     }
 
     public CompletionStage<Void> processDueScheduledMovements() {
-        return scheduledRepo.loadDueScheduledMovementsAsync()
-                .thenCompose(dueList -> {
-                    CompletionStage<Void> chain = CompletableFuture.completedFuture(null);
+        // Se vuoi mantenere questa funzionalità, assicurati che il service la implementi
+        return scheduledMovementService.processDueScheduledMovements();
+    }
 
-                    for (var scheduled : dueList) {
-                        var movement = MovementMapper.scheduledToMovement(scheduled);
-                        chain = chain.thenCompose(v ->
-                                movementRepo.saveMovementAsync(movement)
-                                        .thenCompose(v2 -> scheduledRepo.deleteScheduledMovementAsync(scheduled.getId()))
-                        );
-                    }
-
-                    return chain;
-                });
+    public CompletionStage<List<Tag>> loadAllTagsAsync() {
+        return scheduledMovementService.loadAllTagsAsync();
     }
 }
