@@ -13,6 +13,7 @@
             <Button text="Ammortamento" onAction="#showAmortization"/>
             <Button text="Tag" onAction="#showTags"/>
             <Button text="Budget" onAction="#showBudget"/>
+            <Button text="BudgetEntry" onAction="#showBudgetEntry"/>
             <Button text="Statistiche" onAction="#showStatistics"/>
         </VBox>
     </center>

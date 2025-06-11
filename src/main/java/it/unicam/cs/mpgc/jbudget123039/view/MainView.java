@@ -17,18 +17,25 @@ public class MainView {
     @FXML
     private void showMovements() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/movement.fxml", "Gestione Movimenti", stage);
+        switchScene("/ui/MovementView.fxml", "Gestione Movimenti", stage);
     }
 
     @FXML
     private void showTags() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/tag.fxml", "Gestione Tag", stage);
+        switchScene("/ui/TagView.fxml", "Gestione Tag", stage);
     }
 
     @FXML
     private void showBudget() {
-        System.out.println("Funzione Budget non ancora implementata.");
+        Stage stage = (Stage) mainRoot.getScene().getWindow();
+        switchScene("/ui/BudgetView.fxml", "Gestione Budget", stage);
+    }
+
+    @FXML
+    private void showBudgetEntry() {
+        Stage stage = (Stage) mainRoot.getScene().getWindow();
+        switchScene("/ui/BudgetEntryView.fxml", "Gestione Budget Entry", stage);
     }
 
     @FXML
@@ -39,7 +46,7 @@ public class MainView {
     @FXML
     private void showAmortization() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/amortization.fxml", "Piano di Ammortamento", stage);
+        switchScene("/ui/AmortizationView.fxml", "Piano di Ammortamento", stage);
     }
 
     private void switchScene(String path, String title, Stage stage) {
