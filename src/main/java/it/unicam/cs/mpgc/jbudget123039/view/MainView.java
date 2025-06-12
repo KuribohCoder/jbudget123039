@@ -33,12 +33,6 @@ public class MainView {
     }
 
     @FXML
-    private void showBudgetEntry() {
-        Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/BudgetEntryView.fxml", "Gestione Budget Entry", stage);
-    }
-
-    @FXML
     private void showStatistics() {
         System.out.println("Funzione Statistiche non ancora implementata.");
     }

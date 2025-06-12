@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 public class BudgetRepository {
 
     private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("jbudgetPU");
@@ -22,17 +21,7 @@ public class BudgetRepository {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
-
-                // Persist o merge a seconda se esiste o no
-                if (entity.getId() == null || em.find(BudgetEntity.class, entity.getId()) == null) {
-                    if (entity.getId() == null) {
-                        entity.setId(UUID.randomUUID());
-                    }
-                    em.persist(entity);
-                } else {
-                    em.merge(entity);
-                }
-
+                em.merge(entity);  // merge funziona sia su persist che update
                 em.getTransaction().commit();
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
@@ -47,7 +36,7 @@ public class BudgetRepository {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
-                return em.createQuery("SELECT b FROM BudgetEntity b", BudgetEntity.class)
+                return em.createQuery("SELECT DISTINCT b FROM BudgetEntity b LEFT JOIN FETCH b.movements", BudgetEntity.class)
                         .getResultList();
             } finally {
                 em.close();
@@ -59,7 +48,9 @@ public class BudgetRepository {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
-                return em.find(BudgetEntity.class, id);
+                return em.createQuery("SELECT b FROM BudgetEntity b LEFT JOIN FETCH b.movements WHERE b.id = :id", BudgetEntity.class)
+                        .setParameter("id", id)
+                        .getSingleResult();
             } finally {
                 em.close();
             }

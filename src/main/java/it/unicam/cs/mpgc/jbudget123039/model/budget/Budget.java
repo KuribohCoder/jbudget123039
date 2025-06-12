@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.jbudget123039.model.budget;
 
-import it.unicam.cs.mpgc.jbudget123039.model.budget.BudgetEntry;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,14 +14,8 @@ public class Budget {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    // Lista delle voci di budget (entrate/uscite previste)
-    private List<BudgetEntry> entries;
-
-    public Budget() {
-        this.entries = new ArrayList<>();
-    }
-
-    // Getters e setters
+    // Lista di movimenti (entrate/uscite) associati al budget
+    private List<Movement> movements = new ArrayList<>();
 
     public UUID getId() {
         return id;
@@ -55,23 +49,11 @@ public class Budget {
         this.endDate = endDate;
     }
 
-    public List<BudgetEntry> getEntries() {
-        return entries;
+    public List<Movement> getMovements() {
+        return movements;
     }
 
-    public void setEntries(List<BudgetEntry> entries) {
-        this.entries = entries;
-    }
-
-    // Aggiunge una voce di budget alla lista, evitando duplicati
-    public void addEntry(BudgetEntry entry) {
-        if (!entries.contains(entry)) {
-            entries.add(entry);
-        }
-    }
-
-    // Rimuove una voce
-    public void removeEntry(BudgetEntry entry) {
-        entries.remove(entry);
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
     }
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -97,6 +98,26 @@ public class MovementRepository {
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
                 throw new RuntimeException(e);
+            } finally {
+                em.close();
+            }
+        }, executor);
+    }
+
+    public CompletionStage<List<MovementEntity>> findMovementsByTagAndDateRangeAsync(UUID tagId, LocalDate start, LocalDate end) {
+        return CompletableFuture.supplyAsync(() -> {
+            EntityManager em = emf.createEntityManager();
+            try {
+                String jpql = (tagId != null)
+                        ? "SELECT DISTINCT m FROM MovementEntity m JOIN m.tags t WHERE t.id = :tagId AND m.date BETWEEN :start AND :end"
+                        : "SELECT m FROM MovementEntity m WHERE m.date BETWEEN :start AND :end";
+                var query = em.createQuery(jpql, MovementEntity.class)
+                        .setParameter("start", start)
+                        .setParameter("end", end);
+                if (tagId != null) {
+                    query.setParameter("tagId", tagId);
+                }
+                return query.getResultList();
             } finally {
                 em.close();
             }

@@ -20,39 +20,37 @@ public class ScheduledMovement implements Movement {
 
     }
 
+    @Override
     public UUID getId() {
         return id;
     }
 
+    @Override
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    @Override
     public String getDescription() {
         return description;
     }
 
     @Override
     public LocalDate getDate() {
-        return null;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public boolean isIncome() {
-        return income;
-    }
-
-    public LocalDate getScheduledDate() {
         return scheduledDate;
     }
 
-    public List<Tag> getTags() {
-        return tags;
-    }
-
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
 
+    @Override
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    @Override
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
@@ -62,19 +60,31 @@ public class ScheduledMovement implements Movement {
 
     }
 
+    @Override
+    public boolean isIncome() {
+        return income;
+    }
+
+    @Override
     public void setIncome(boolean income) {
         this.income = income;
+    }
+
+    public LocalDate getScheduledDate() {
+        return scheduledDate;
     }
 
     public void setScheduledDate(LocalDate scheduledDate) {
         this.scheduledDate = scheduledDate;
     }
 
-    public void setTags(List<Tag> tags) {
-        this.tags = tags;
+    @Override
+    public List<Tag> getTags() {
+        return tags;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    @Override
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

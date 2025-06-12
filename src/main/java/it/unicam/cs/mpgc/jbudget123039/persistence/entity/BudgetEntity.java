@@ -22,9 +22,11 @@ public class BudgetEntity {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    // Relazione uno-a-molti con le voci di budget
-    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BudgetEntryEntity> entries;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "budget_movements",
+            joinColumns = @JoinColumn(name = "budget_id"),
+            inverseJoinColumns = @JoinColumn(name = "movement_id"))
+    private List<MovementEntity> movements;
 
     public BudgetEntity() {
         this.id = UUID.randomUUID();
@@ -64,11 +66,11 @@ public class BudgetEntity {
         this.endDate = endDate;
     }
 
-    public List<BudgetEntryEntity> getEntries() {
-        return entries;
+    public List<MovementEntity> getMovements() {
+        return movements;
     }
 
-    public void setEntries(List<BudgetEntryEntity> entries) {
-        this.entries = entries;
+    public void setMovements(List<MovementEntity> movements) {
+        this.movements = movements;
     }
 }
