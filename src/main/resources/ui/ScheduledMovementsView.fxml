@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="it.unicam.cs.mpgc.jbudget123039.view.ScheduledMovementsView">
+
+    <center>
+        <VBox spacing="10">
+            <TableView fx:id="tableScheduledMovements" prefHeight="300">
+                <columns>
+                    <TableColumn fx:id="colDescription" text="Descrizione"/>
+                    <TableColumn fx:id="colDate" text="Data"/>
+                    <TableColumn fx:id="colAmount" text="Importo"/>
+                    <TableColumn fx:id="colIncome" text="Entrata"/>
+                    <TableColumn fx:id="colTags" text="Tag"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox spacing="10">
+            <Label text="Nuova Scadenza"/>
+            <GridPane hgap="10" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="75"/>
+                </columnConstraints>
+
+                <Label text="Descrizione:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtDescription" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Data:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="datePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Importo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtAmount" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Entrata?" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <CheckBox fx:id="checkIncome" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Tag:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <ListView fx:id="listTags" GridPane.rowIndex="4" GridPane.columnIndex="1" editable="false"
+                          prefHeight="100"/>
+            </GridPane>
+
+            <HBox spacing="10">
+                <Button text="Aggiungi" onAction="#handleAdd"/>
+                <Button text="Elimina selezionato" onAction="#handleDelete"/>
+                <Button text="Torna al menu" onAction="#handleBack"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

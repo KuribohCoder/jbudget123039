@@ -43,6 +43,12 @@ public class MainView {
         switchScene("/ui/AmortizationView.fxml", "Piano di Ammortamento", stage);
     }
 
+    @FXML
+    private void showScheduledMovements() {
+        Stage stage = (Stage) mainRoot.getScene().getWindow();
+        switchScene("/ui/ScheduledMovementsView.fxml", "Scadenziario", stage);
+    }
+
     private void switchScene(String path, String title, Stage stage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));

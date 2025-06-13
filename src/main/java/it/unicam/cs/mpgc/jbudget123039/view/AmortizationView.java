@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ScheduledMovementView {
+public class AmortizationView {
 
     @FXML private TextField importoField;
     @FXML private TextField rateField;
