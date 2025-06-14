@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -23,13 +24,22 @@
 
     <Button text="Confronta" onAction="#handleCompare"/>
 
-    <TableView fx:id="tableComparison" prefHeight="300" prefWidth="600">
+    <TableView fx:id="tableComparison" prefHeight="250" prefWidth="600">
         <columns>
             <TableColumn fx:id="colCategory" text="Categoria" prefWidth="200"/>
             <TableColumn fx:id="colPeriod1" text="Periodo 1 (€)" prefWidth="200"/>
             <TableColumn fx:id="colPeriod2" text="Periodo 2 (€)" prefWidth="200"/>
         </columns>
     </TableView>
+
+    <BarChart fx:id="barChart" prefHeight="300" prefWidth="600">
+        <xAxis>
+            <CategoryAxis label="Categoria"/>
+        </xAxis>
+        <yAxis>
+            <NumberAxis label="Spesa (€)"/>
+        </yAxis>
+    </BarChart>
 
     <Button text="Torna al Menu" onAction="#handleBack"/>
 </VBox>

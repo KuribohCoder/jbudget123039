@@ -7,6 +7,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
@@ -14,13 +16,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
+import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.showError;
+
 public class StatisticsView {
 
     @FXML private DatePicker startDate1, endDate1, startDate2, endDate2;
     @FXML private TableView<StatEntry> tableComparison;
     @FXML private TableColumn<StatEntry, String> colCategory;
     @FXML private TableColumn<StatEntry, BigDecimal> colPeriod1, colPeriod2;
-
+    @FXML private BarChart<String, Number> barChart;
     private final StatisticsController controller = new StatisticsController();
 
     @FXML
@@ -50,6 +54,7 @@ public class StatisticsView {
                                     entry.getValue().amount1(),
                                     entry.getValue().amount2()))
                             .toList()));
+                    updateBarChart(result);
                 }))
                 .exceptionally(ex -> {
                     ex.printStackTrace();
@@ -64,9 +69,31 @@ public class StatisticsView {
         SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
     }
 
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
-        alert.showAndWait();
+    private void updateBarChart(Map<String, StatisticsController.StatComparison> data) {
+        barChart.getData().clear();
+
+        XYChart.Series<String, Number> series1 = new XYChart.Series<>();
+        series1.setName("Periodo 1");
+        XYChart.Series<String, Number> series2 = new XYChart.Series<>();
+        series2.setName("Periodo 2");
+
+        data.forEach((category, comparison) -> {
+            String shortCategory = category.length() > 12 ? category.substring(0, 12) + "…" : category;
+            series1.getData().add(new XYChart.Data<>(shortCategory, comparison.amount1()));
+            series2.getData().add(new XYChart.Data<>(shortCategory, comparison.amount2()));
+        });
+
+        barChart.getData().addAll(series1, series2);
+
+        if (barChart.getXAxis() instanceof javafx.scene.chart.CategoryAxis xAxis) {
+            xAxis.setTickLabelRotation(-45);
+            xAxis.setTickLabelGap(10);
+            xAxis.setCategories(FXCollections.observableArrayList(
+                    data.keySet().stream()
+                            .map(cat -> cat.length() > 12 ? cat.substring(0, 12) + "…" : cat)
+                            .toList()
+            ));
+        }
     }
 
     public record StatEntry(String category, BigDecimal amount1, BigDecimal amount2) {}
