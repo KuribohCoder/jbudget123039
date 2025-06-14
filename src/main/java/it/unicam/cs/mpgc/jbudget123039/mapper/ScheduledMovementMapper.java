@@ -16,6 +16,7 @@ public class ScheduledMovementMapper {
         model.setScheduledDate(DateUtil.getOrDefault(entity.getScheduledDate()));
         model.setIncome(entity.isIncome());
         model.setTags(TagMapper.toModelTagList(entity.getTags()));
+        model.setOrigin(entity.getOrigin());
 
         return model;
     }
@@ -30,6 +31,7 @@ public class ScheduledMovementMapper {
         entity.setScheduledDate(model.getScheduledDate());
         entity.setIncome(model.isIncome());
         entity.setTags(TagMapper.toEntityTagList(model.getTags()));
+        entity.setOrigin(model.getOrigin());
 
         return entity;
     }

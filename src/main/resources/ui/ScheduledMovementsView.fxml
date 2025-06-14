@@ -2,13 +2,13 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="it.unicam.cs.mpgc.jbudget123039.view.ScheduledMovementsView">
 
     <center>
         <VBox spacing="10">
+            <Label text="Scadenziario" style="-fx-font-size: 18px;"/>
             <TableView fx:id="tableScheduledMovements" prefHeight="300">
                 <columns>
                     <TableColumn fx:id="colDescription" text="Descrizione"/>
@@ -43,12 +43,15 @@
                 <CheckBox fx:id="checkIncome" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
                 <Label text="Tag:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                <ListView fx:id="listTags" GridPane.rowIndex="4" GridPane.columnIndex="1" editable="false"
+                <ListView fx:id="listTags"
+                          GridPane.rowIndex="4"
+                          GridPane.columnIndex="1"
                           prefHeight="100"/>
             </GridPane>
 
             <HBox spacing="10">
                 <Button text="Aggiungi" onAction="#handleAdd"/>
+                <Button text="Modifica selezionato" onAction="#handleUpdate"/>
                 <Button text="Elimina selezionato" onAction="#handleDelete"/>
                 <Button text="Torna al menu" onAction="#handleBack"/>
             </HBox>

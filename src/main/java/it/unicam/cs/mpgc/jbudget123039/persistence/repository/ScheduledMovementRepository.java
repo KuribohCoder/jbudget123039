@@ -106,6 +106,20 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    public CompletionStage<List<ScheduledMovementEntity>> loadAllManualScheduledMovementsAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            EntityManager em = emf.createEntityManager();
+            try {
+                return em.createQuery(
+                                "SELECT s FROM ScheduledMovementEntity s WHERE s.origin = it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovementOrigin.MANUAL",
+                                ScheduledMovementEntity.class)
+                        .getResultList();
+            } finally {
+                em.close();
+            }
+        }, executor);
+    }
+
     public void shutdown() {
         executor.shutdown();
         emf.close();

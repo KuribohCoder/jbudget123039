@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.ScheduledMovementController;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovementOrigin;
 import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
 import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
 import javafx.application.Platform;
@@ -45,13 +46,12 @@ public class ScheduledMovementsView {
         colTags.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getTags().stream()
                         .map(Tag::getName).collect(Collectors.joining(", "))));
-
         loadScheduledMovements();
         loadTags();
     }
 
     private void loadScheduledMovements() {
-        controller.loadAllScheduledMovements()
+        controller.loadAllManualScheduledMovements()
                 .thenAccept(movements ->
                         Platform.runLater(() -> tableScheduledMovements.setItems(FXCollections.observableArrayList(movements)))
                 ).exceptionally(ex -> {
@@ -62,9 +62,12 @@ public class ScheduledMovementsView {
     }
 
     private void loadTags() {
-        controller.loadAllTagsAsync().thenAccept(tags ->
-                Platform.runLater(() -> listTags.setItems(FXCollections.observableArrayList(tags)))
-        );
+        controller.loadAllTagsAsync().thenAccept(tags -> {
+            Platform.runLater(() -> {
+                listTags.setItems(FXCollections.observableArrayList(tags));
+                listTags.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            });
+        });
     }
 
     @FXML
@@ -89,9 +92,13 @@ public class ScheduledMovementsView {
             movement.setScheduledDate(date);
             movement.setIncome(income);
             movement.setTags(selectedTags);
+            movement.setOrigin(ScheduledMovementOrigin.MANUAL);
 
             controller.saveOrUpdateScheduledMovement(movement)
-                    .thenRun(this::loadScheduledMovements)
+                    .thenRun(() -> {
+                        loadScheduledMovements();
+                        Platform.runLater(this::clearFields); // <-- eseguito dopo il salvataggio
+                    })
                     .exceptionally(ex -> {
                         ex.printStackTrace();
                         Platform.runLater(() -> showError("Errore nel salvataggio della scadenza."));
@@ -117,6 +124,58 @@ public class ScheduledMovementsView {
                     Platform.runLater(() -> showError("Errore durante l'eliminazione."));
                     return null;
                 });
+    }
+
+    @FXML
+    private void handleUpdate() {
+        ScheduledMovement selected = tableScheduledMovements.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showError("Seleziona una rata da modificare.");
+            return;
+        }
+
+        try {
+            String amountStr = txtAmount.getText();
+            if (amountStr != null && !amountStr.isBlank()) {
+                BigDecimal nuovoImporto = new BigDecimal(amountStr);
+                selected.setAmount(nuovoImporto);
+            }
+
+            String description = txtDescription.getText().trim();
+            if (description != null && !description.isBlank()) {
+                selected.setDescription(description);
+            }
+
+            LocalDate date = datePicker.getValue();
+            if (date != null) {
+                selected.setScheduledDate(date);
+            }
+
+            List<Tag> selectedTags = listTags.getSelectionModel()
+                    .getSelectedItems();
+            if (!selectedTags.isEmpty()) {
+                selected.setTags(selectedTags);
+            }
+
+            controller.saveOrUpdateScheduledMovement(selected)
+                    .thenRun(this::loadScheduledMovements)
+                    .exceptionally(ex -> {
+                        ex.printStackTrace();
+                        Platform.runLater(() -> showError("Errore durante la modifica"));
+                        return null;
+                    });
+
+        } catch (Exception e) {
+            showError("Errore nei dati inseriti: " + e.getMessage());
+        }
+    }
+
+    private void clearFields() {
+        txtDescription.clear();
+        txtAmount.clear();
+        checkIncome.setSelected(false);
+        datePicker.setValue(null);
+        listTags.getSelectionModel().clearSelection();
     }
 
     @FXML

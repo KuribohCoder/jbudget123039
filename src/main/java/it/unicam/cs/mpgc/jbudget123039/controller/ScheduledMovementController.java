@@ -41,4 +41,8 @@ public class ScheduledMovementController {
     public CompletionStage<List<Tag>> loadAllTagsAsync() {
         return scheduledMovementService.loadAllTagsAsync();
     }
+
+    public CompletionStage<List<ScheduledMovement>> loadAllManualScheduledMovements() {
+        return scheduledMovementService.loadAllManualScheduledMovements();
+    }
 }

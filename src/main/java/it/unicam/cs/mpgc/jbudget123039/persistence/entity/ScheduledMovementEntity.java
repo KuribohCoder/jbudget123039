@@ -1,5 +1,6 @@
 package it.unicam.cs.mpgc.jbudget123039.persistence.entity;
 
+import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovementOrigin;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -18,10 +19,13 @@ public class ScheduledMovementEntity {
     private LocalDate scheduledDate;
     private BigDecimal amount;
     private boolean income;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "scheduled_movement_tags", joinColumns = @JoinColumn(name = "scheduled_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagEntity> tags;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "origin", nullable = false)
+    private ScheduledMovementOrigin origin = ScheduledMovementOrigin.MANUAL;
 
     public ScheduledMovementEntity() {
     }
@@ -72,5 +76,13 @@ public class ScheduledMovementEntity {
 
     public void setTags(List<TagEntity> tags) {
         this.tags = tags;
+    }
+
+    public ScheduledMovementOrigin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(ScheduledMovementOrigin origin) {
+        this.origin = origin;
     }
 }

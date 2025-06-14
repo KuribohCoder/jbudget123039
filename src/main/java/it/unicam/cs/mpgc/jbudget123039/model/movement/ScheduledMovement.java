@@ -16,6 +16,7 @@ public class ScheduledMovement implements Movement {
     private LocalDate scheduledDate;
     private List<Tag> tags;
 
+    private ScheduledMovementOrigin origin = ScheduledMovementOrigin.MANUAL;
     public ScheduledMovement() {
 
     }
@@ -86,5 +87,12 @@ public class ScheduledMovement implements Movement {
     @Override
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+    public ScheduledMovementOrigin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(ScheduledMovementOrigin origin) {
+        this.origin = origin;
     }
 }

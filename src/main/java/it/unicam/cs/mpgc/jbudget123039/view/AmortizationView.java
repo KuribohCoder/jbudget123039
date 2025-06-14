@@ -2,6 +2,7 @@ package it.unicam.cs.mpgc.jbudget123039.view;
 
 import it.unicam.cs.mpgc.jbudget123039.controller.ScheduledMovementController;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovementOrigin;
 import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
 import it.unicam.cs.mpgc.jbudget123039.util.DateUtil;
 import it.unicam.cs.mpgc.jbudget123039.util.SceneSwitcherUtils;
@@ -121,6 +122,7 @@ public class AmortizationView {
                 rata.setAmount(importoRata.negate());
                 rata.setIncome(false);
                 rata.setScheduledDate(dataRata);
+                rata.setOrigin(ScheduledMovementOrigin.AMORTIZATION);
 
                 List<Tag> selectedTags = tagListView.getSelectionModel()
                         .getSelectedItems();
@@ -147,14 +149,15 @@ public class AmortizationView {
 
     private void refreshRateTable() {
         controller.loadAllScheduledMovements()
-                .thenAccept(list -> Platform.runLater(() -> {
-                    rateList.setAll(list);
-                    rataTable.refresh();
-                }))
-                .exceptionally(ex -> {
-                    ex.printStackTrace();
-                    Platform.runLater(() -> showError("Errore nel caricamento delle rate"));
-                    return null;
+                .thenAccept(list -> {
+                    List<ScheduledMovement> soloRate = list.stream()
+                            .filter(m -> m.getOrigin() == ScheduledMovementOrigin.AMORTIZATION)
+                            .toList();
+
+                    Platform.runLater(() -> {
+                        rateList.setAll(soloRate);
+                        rataTable.refresh();
+                    });
                 });
     }
 

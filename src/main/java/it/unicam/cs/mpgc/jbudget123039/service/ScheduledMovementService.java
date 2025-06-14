@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.jbudget123039.mapper.MovementMapper;
 import it.unicam.cs.mpgc.jbudget123039.mapper.ScheduledMovementMapper;
 import it.unicam.cs.mpgc.jbudget123039.mapper.TagMapper;
 import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
+import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovementOrigin;
 import it.unicam.cs.mpgc.jbudget123039.model.tag.Tag;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity;
@@ -61,6 +62,9 @@ public class ScheduledMovementService {
         if (model.getId() == null) {
             model.setId(UUID.randomUUID());
         }
+        if (model.getOrigin() == null) {
+            model.setOrigin(ScheduledMovementOrigin.MANUAL);
+        }
 
         return verifyTagsExist(model.getTags())
                 .thenCompose(v -> {
@@ -104,4 +108,12 @@ public class ScheduledMovementService {
                     return chain;
                 });
     }
+
+    public CompletionStage<List<ScheduledMovement>> loadAllManualScheduledMovements() {
+        return scheduledRepo.loadAllManualScheduledMovementsAsync()
+                .thenApply(list -> list.stream()
+                        .map(ScheduledMovementMapper::toModel)
+                        .collect(Collectors.toList()));
+    }
+
 }
