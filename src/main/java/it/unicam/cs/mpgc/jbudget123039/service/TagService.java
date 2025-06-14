@@ -10,17 +10,30 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+/**
+ * Service per la gestione dei tag.
+ * Fornisce metodi per creare, aggiornare, eliminare e caricare tag,
+ * gestendo anche la verifica dell'esistenza del parent e la gerarchia dei figli.
+ */
 public class TagService {
 
     private final TagRepository repository;
 
+    /**
+     * Costruttore che riceve un repository di tag.
+     *
+     * @param repository repository per l'accesso e manipolazione dei dati TagEntity
+     */
     public TagService(TagRepository repository) {
         this.repository = repository;
     }
 
     /**
-     * Crea un tag con il nome specificato solo se non esiste già.
-     * Utile principalmente per interfacce UI.
+     * Crea un nuovo tag con il nome specificato solo se non esiste già un tag con quel nome.
+     * Utile principalmente per interfacce utente per evitare duplicati.
+     *
+     * @param name nome del tag da creare
+     * @return {@link CompletionStage} contenente il tag creato o esistente
      */
     public CompletionStage<Tag> createTagIfNotExistsByName(String name) {
         return repository.findByNameAsync(name)
@@ -38,7 +51,13 @@ public class TagService {
     }
 
     /**
-     * Salva o aggiorna un tag. Se è presente un parent, verifica che esista nel DB.
+     * Salva o aggiorna un tag nel database.
+     * Se il tag ha un parent, verifica che il parent esista nel database.
+     *
+     * @param tag modello Tag da salvare o aggiornare
+     * @return {@link CompletionStage} contenente il tag salvato/aggiornato
+     * @throws IllegalArgumentException se il parent ha ID nullo
+     * @throws IllegalStateException se il parent non esiste nel database
      */
     public CompletionStage<Tag> saveOrUpdateTag(Tag tag) {
         return ensureParentExists(tag)
@@ -50,6 +69,13 @@ public class TagService {
                 });
     }
 
+    /**
+     * Verifica che il parent del tag esista nel database.
+     * Se il parent non è presente o il suo ID è nullo, lancia eccezioni.
+     *
+     * @param tag tag di cui verificare il parent
+     * @return {@link CompletionStage} completato se la verifica ha successo
+     */
     private CompletionStage<Void> ensureParentExists(Tag tag) {
         if (tag.getParent() == null) return CompletableFuture.completedFuture(null);
 
@@ -69,7 +95,12 @@ public class TagService {
     }
 
     /**
-     * Elimina un tag rimuovendo prima tutte le relazioni con movimenti, scheduledMovements e figli.
+     * Elimina un tag dal database.
+     * Prima della cancellazione rimuove tutte le relazioni del tag con movimenti,
+     * scheduled movements, il parent e i figli per mantenere l'integrità referenziale.
+     *
+     * @param id UUID del tag da eliminare
+     * @return {@link CompletionStage} che completa quando la cancellazione è terminata
      */
     public CompletionStage<Void> deleteTag(UUID id) {
         return repository.findByIdAsync(id)
@@ -96,13 +127,20 @@ public class TagService {
     }
 
     /**
-     * Carica tutti i tag, inclusa la gerarchia di figli.
+     * Carica tutti i tag dal database, inclusa la gerarchia dei figli.
+     *
+     * @return {@link CompletionStage} contenente la lista di tag con gerarchia
      */
     public CompletionStage<List<Tag>> loadAllTagsWithHierarchy() {
         return repository.loadAllTagsWithChildrenAsync()
                 .thenApply(TagMapper::toModelTagList);
     }
 
+    /**
+     * Carica tutti i tag, equivalente a {@link #loadAllTagsWithHierarchy()}.
+     *
+     * @return {@link CompletionStage} contenente la lista di tag
+     */
     public CompletionStage<List<Tag>> loadAllTags() {
         return repository.loadAllTagsWithChildrenAsync()
                 .thenApply(TagMapper::toModelTagList);

@@ -5,8 +5,20 @@ import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity;
 
 import java.util.UUID;
+
+/**
+ * Mapper per la conversione tra oggetti Movement, MovementEntity e ScheduledMovementEntity.
+ * Fornisce metodi statici per la trasformazione tra modelli e entità.
+ */
 public class MovementMapper {
 
+    /**
+     * Converte un oggetto ScheduledMovementEntity in un MovementEntity.
+     * Genera un nuovo UUID per l'entity.
+     *
+     * @param scheduled l'entità ScheduledMovementEntity da convertire
+     * @return il corrispondente MovementEntity oppure null se l'input è null
+     */
     public static MovementEntity scheduledToMovement(ScheduledMovementEntity scheduled) {
         if (scheduled == null) return null;
 
@@ -20,6 +32,13 @@ public class MovementMapper {
         return entity;
     }
 
+    /**
+     * Converte un oggetto Movement in un MovementEntity.
+     * Se l'id del modello è null, viene generato un nuovo UUID.
+     *
+     * @param model l'oggetto Movement da convertire
+     * @return il corrispondente MovementEntity oppure null se il modello è null
+     */
     public static MovementEntity toEntity(Movement model) {
         if (model == null) return null;
 
@@ -34,6 +53,13 @@ public class MovementMapper {
         return entity;
     }
 
+    /**
+     * Converte un oggetto MovementEntity in un Movement.
+     * Il tipo restituito è BasicMovement.
+     *
+     * @param entity l'entità MovementEntity da convertire
+     * @return il corrispondente oggetto Movement oppure null se l'entità è null
+     */
     public static Movement toModel(MovementEntity entity) {
         if (entity == null) return null;
 

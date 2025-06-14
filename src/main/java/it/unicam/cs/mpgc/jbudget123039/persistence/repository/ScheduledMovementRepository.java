@@ -14,11 +14,22 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Repository per la gestione asincrona dei {@link ScheduledMovementEntity} tramite JPA.
+ * Include operazioni CRUD e query personalizzate, eseguite su un thread pool dedicato.
+ */
 public class ScheduledMovementRepository {
 
     private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("jbudgetPU");
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
+    /**
+     * Salva o aggiorna un {@link ScheduledMovementEntity} nel database.
+     * I tag associati vengono convertiti in entità gestite per evitare errori di stato.
+     *
+     * @param entity l'entità da salvare o aggiornare
+     * @return un {@link CompletionStage} che completa l'operazione
+     */
     public CompletionStage<Void> saveOrUpdateScheduledMovementAsync(ScheduledMovementEntity entity) {
         return CompletableFuture.runAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -43,7 +54,7 @@ public class ScheduledMovementRepository {
 
                 if (existing == null) {
                     if (entity.getId() == null) {
-                        entity.setId(UUID.randomUUID()); // fallback
+                        entity.setId(UUID.randomUUID());
                     }
                     em.persist(entity);
                 } else {
@@ -60,6 +71,11 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    /**
+     * Carica tutti i movimenti schedulati dal database.
+     *
+     * @return {@link CompletionStage} contenente una lista di {@link ScheduledMovementEntity}
+     */
     public CompletionStage<List<ScheduledMovementEntity>> loadAllScheduledMovementsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -72,6 +88,12 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    /**
+     * Elimina un movimento schedulato dato il suo ID.
+     *
+     * @param id UUID del movimento da eliminare
+     * @return {@link CompletionStage} che completa l'operazione
+     */
     public CompletionStage<Void> deleteScheduledMovementAsync(UUID id) {
         return CompletableFuture.runAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -91,6 +113,11 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    /**
+     * Carica tutti i movimenti schedulati che risultano scaduti alla data odierna o precedente.
+     *
+     * @return {@link CompletionStage} con i movimenti scaduti
+     */
     public CompletionStage<List<ScheduledMovementEntity>> loadDueScheduledMovementsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -106,6 +133,11 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    /**
+     * Carica tutti i movimenti schedulati di origine manuale.
+     *
+     * @return {@link CompletionStage} con i movimenti manuali
+     */
     public CompletionStage<List<ScheduledMovementEntity>> loadAllManualScheduledMovementsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -120,6 +152,10 @@ public class ScheduledMovementRepository {
         }, executor);
     }
 
+    /**
+     * Chiude il {@link EntityManagerFactory} e il thread pool associato.
+     * Va invocato in fase di chiusura dell'applicazione.
+     */
     public void shutdown() {
         executor.shutdown();
         emf.close();

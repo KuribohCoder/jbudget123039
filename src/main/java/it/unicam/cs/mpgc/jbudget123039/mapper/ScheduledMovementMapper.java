@@ -4,8 +4,19 @@ import it.unicam.cs.mpgc.jbudget123039.model.movement.ScheduledMovement;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.ScheduledMovementEntity;
 import it.unicam.cs.mpgc.jbudget123039.util.DateUtil;
 
+/**
+ * Mapper per la conversione tra ScheduledMovementEntity e ScheduledMovement.
+ * Fornisce metodi statici per la trasformazione bidirezionale tra entity e modello.
+ */
 public class ScheduledMovementMapper {
 
+    /**
+     * Converte un oggetto ScheduledMovementEntity in un ScheduledMovement.
+     * Utilizza DateUtil per fornire un valore di default alla data schedulata, se necessario.
+     *
+     * @param entity l'entità ScheduledMovementEntity da convertire
+     * @return il corrispondente ScheduledMovement oppure null se l'entità è null
+     */
     public static ScheduledMovement toModel(ScheduledMovementEntity entity) {
         if (entity == null) return null;
 
@@ -21,6 +32,12 @@ public class ScheduledMovementMapper {
         return model;
     }
 
+    /**
+     * Converte un oggetto ScheduledMovement in un ScheduledMovementEntity.
+     *
+     * @param model l'oggetto ScheduledMovement da convertire
+     * @return il corrispondente ScheduledMovementEntity oppure null se il modello è null
+     */
     public static ScheduledMovementEntity toEntity(ScheduledMovement model) {
         if (model == null) return null;
 

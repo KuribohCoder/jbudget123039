@@ -11,17 +11,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+/**
+ * Repository per la gestione delle operazioni asincrone su {@link BudgetEntity}.
+ * Utilizza {@link EntityManager} e JPA per operazioni CRUD su un database relazionale.
+ */
 public class BudgetRepository {
 
     private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("jbudgetPU");
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
 
+    /**
+     * Salva o aggiorna un budget in modo asincrono.
+     * Utilizza {@code merge}, che gestisce sia l'inserimento che l'aggiornamento.
+     *
+     * @param entity il budget da salvare o aggiornare
+     * @return {@link CompletionStage} che completa l'operazione
+     */
     public CompletionStage<Void> saveOrUpdateBudgetAsync(BudgetEntity entity) {
         return CompletableFuture.runAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
                 em.getTransaction().begin();
-                em.merge(entity);  // merge funziona sia su persist che update
+                em.merge(entity);
                 em.getTransaction().commit();
             } catch (Exception e) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
@@ -32,31 +44,49 @@ public class BudgetRepository {
         }, executor);
     }
 
+    /**
+     * Carica tutti i budget presenti nel database con i relativi movimenti associati.
+     *
+     * @return {@link CompletionStage} con la lista dei {@link BudgetEntity}
+     */
     public CompletionStage<List<BudgetEntity>> loadAllBudgetsAsync() {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
-                return em.createQuery("SELECT DISTINCT b FROM BudgetEntity b LEFT JOIN FETCH b.movements", BudgetEntity.class)
-                        .getResultList();
+                return em.createQuery(
+                        "SELECT DISTINCT b FROM BudgetEntity b LEFT JOIN FETCH b.movements", BudgetEntity.class
+                ).getResultList();
             } finally {
                 em.close();
             }
         }, executor);
     }
 
+    /**
+     * Trova un budget per ID, inclusi i movimenti associati.
+     *
+     * @param id UUID del budget da cercare
+     * @return {@link CompletionStage} con il {@link BudgetEntity} corrispondente
+     */
     public CompletionStage<BudgetEntity> findByIdAsync(UUID id) {
         return CompletableFuture.supplyAsync(() -> {
             EntityManager em = emf.createEntityManager();
             try {
-                return em.createQuery("SELECT b FROM BudgetEntity b LEFT JOIN FETCH b.movements WHERE b.id = :id", BudgetEntity.class)
-                        .setParameter("id", id)
-                        .getSingleResult();
+                return em.createQuery(
+                        "SELECT b FROM BudgetEntity b LEFT JOIN FETCH b.movements WHERE b.id = :id", BudgetEntity.class
+                ).setParameter("id", id).getSingleResult();
             } finally {
                 em.close();
             }
         }, executor);
     }
 
+    /**
+     * Elimina un budget per ID, se esiste.
+     *
+     * @param id UUID del budget da eliminare
+     * @return {@link CompletionStage} che completa l'operazione
+     */
     public CompletionStage<Void> deleteBudgetAsync(UUID id) {
         return CompletableFuture.runAsync(() -> {
             EntityManager em = emf.createEntityManager();
@@ -76,6 +106,10 @@ public class BudgetRepository {
         }, executor);
     }
 
+    /**
+     * Arresta il pool di thread e chiude il {@link EntityManagerFactory}.
+     * Va chiamato alla chiusura dell'applicazione.
+     */
     public void shutdown() {
         executor.shutdown();
         emf.close();

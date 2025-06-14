@@ -31,13 +31,12 @@ public class MovementService {
         List<CompletableFuture<Void>> futures = tags.stream()
                 .map(tag -> {
                     if (tag.getId() == null) {
-                        // Se non ha ID, cerca per nome
                         return tagRepository.findByNameAsync(tag.getName())
                                 .thenAccept(entity -> {
                                     if (entity == null) {
                                         throw new IllegalStateException("Tag '" + tag.getName() + "' not found.");
                                     }
-                                    tag.setId(entity.getId());  // assegna l'ID trovato
+                                    tag.setId(entity.getId());
                                 }).toCompletableFuture();
                     } else {
                         // Cerca per ID

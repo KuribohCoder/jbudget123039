@@ -18,20 +18,35 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+/**
+ * Service per la gestione dei movimenti programmati (ScheduledMovement).
+ * Fornisce operazioni asincrone per creare, aggiornare, cancellare, caricare movimenti programmati,
+ * verificare i tag associati e processare movimenti dovuti.
+ */
 public class ScheduledMovementService {
 
     private final ScheduledMovementRepository scheduledRepo;
     private final MovementRepository movementRepo = new MovementRepository();
     private final TagRepository tagRepository;
 
+    /**
+     * Costruttore che inizializza i repository necessari per gestire movimenti programmati e tag.
+     *
+     * @param scheduledRepo repository per i movimenti programmati
+     * @param tagRepository repository per i tag
+     */
     public ScheduledMovementService(ScheduledMovementRepository scheduledRepo, TagRepository tagRepository) {
         this.scheduledRepo = scheduledRepo;
         this.tagRepository = tagRepository;
     }
 
     /**
-     * Verifica che tutti i tag nel modello abbiano ID validi e corrispondano ad entità persistenti.
-     * Se un tag non ha ID, cerca per nome e assegna l'ID.
+     * Verifica che tutti i tag nella lista esistano nel database.
+     * Se un tag non ha ID, cerca per nome e assegna l'ID trovato.
+     * Genera un errore se un tag non esiste o non è trovato.
+     *
+     * @param tags lista di tag da verificare
+     * @return CompletionStage che completa al termine della verifica
      */
     private CompletionStage<Void> verifyTagsExist(List<Tag> tags) {
         List<CompletableFuture<Void>> futures = tags.stream()
@@ -58,6 +73,15 @@ public class ScheduledMovementService {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
+    /**
+     * Salva o aggiorna un movimento programmato.
+     * Se l'ID non è presente, ne viene generato uno nuovo.
+     * Se l'origine non è specificata, viene impostata manuale (MANUAL).
+     * Verifica i tag associati prima del salvataggio.
+     *
+     * @param model movimento programmato da salvare o aggiornare
+     * @return CompletionStage che completa quando l'operazione è terminata
+     */
     public CompletionStage<Void> saveOrUpdateScheduledMovement(ScheduledMovement model) {
         if (model.getId() == null) {
             model.setId(UUID.randomUUID());
@@ -73,10 +97,21 @@ public class ScheduledMovementService {
                 });
     }
 
+    /**
+     * Elimina un movimento programmato dato il suo ID.
+     *
+     * @param id ID del movimento programmato da eliminare
+     * @return CompletionStage che completa al termine della cancellazione
+     */
     public CompletionStage<Void> deleteScheduledMovement(UUID id) {
         return scheduledRepo.deleteScheduledMovementAsync(id);
     }
 
+    /**
+     * Carica tutti i movimenti programmati presenti nel database.
+     *
+     * @return CompletionStage contenente la lista di movimenti programmati
+     */
     public CompletionStage<List<ScheduledMovement>> loadAllScheduledMovements() {
         return scheduledRepo.loadAllScheduledMovementsAsync()
                 .thenApply(list -> list.stream()
@@ -84,6 +119,11 @@ public class ScheduledMovementService {
                         .collect(Collectors.toList()));
     }
 
+    /**
+     * Carica tutti i tag disponibili.
+     *
+     * @return CompletionStage contenente la lista dei tag
+     */
     public CompletionStage<List<Tag>> loadAllTagsAsync() {
         return tagRepository.loadAllTagsAsync()
                 .thenApply(list -> list.stream()
@@ -91,6 +131,12 @@ public class ScheduledMovementService {
                         .collect(Collectors.toList()));
     }
 
+    /**
+     * Processa i movimenti programmati dovuti (ad esempio quelli con data prevista già trascorsa).
+     * Per ogni movimento dovuto, crea un movimento reale e poi elimina il movimento programmato corrispondente.
+     *
+     * @return CompletionStage che completa al termine del processo di tutti i movimenti dovuti
+     */
     public CompletionStage<Void> processDueScheduledMovements() {
         return scheduledRepo.loadDueScheduledMovementsAsync()
                 .thenCompose(dueList -> {
@@ -109,6 +155,11 @@ public class ScheduledMovementService {
                 });
     }
 
+    /**
+     * Carica tutti i movimenti programmati di origine manuale.
+     *
+     * @return CompletionStage contenente la lista di movimenti programmati manuali
+     */
     public CompletionStage<List<ScheduledMovement>> loadAllManualScheduledMovements() {
         return scheduledRepo.loadAllManualScheduledMovementsAsync()
                 .thenApply(list -> list.stream()

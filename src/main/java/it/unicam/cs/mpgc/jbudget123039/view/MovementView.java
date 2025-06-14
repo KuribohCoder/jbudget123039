@@ -21,6 +21,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Controller class for the Movement view.
+ * <p>
+ * Manages user interactions for creating, updating, deleting, and displaying financial movements.
+ * Each movement can be associated with multiple tags and has details like description, amount,
+ * date, and type (income or expense).
+ * </p>
+ */
 public class MovementView {
 
     @FXML
@@ -50,8 +58,13 @@ public class MovementView {
     private final ObservableList<Movement> movements = FXCollections.observableArrayList();
     private final ObservableList<Tag> tags = FXCollections.observableArrayList();
 
+    /**
+     * Initializes the view by setting up table columns, loading movements and tags asynchronously,
+     * and configuring the tag list for multi-selection.
+     */
     @FXML
     public void initialize() {
+        // Setup table columns value factories
         colDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
         colDate.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getDate()));
         colAmount.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getAmount()));
@@ -63,6 +76,7 @@ public class MovementView {
 
         movementTable.setItems(movements);
 
+        // Load movements asynchronously
         controller.loadAllMovementsAsync()
                 .thenAccept(list -> Platform.runLater(() -> {
                     movements.setAll(list);
@@ -73,6 +87,7 @@ public class MovementView {
                     return null;
                 });
 
+        // Load tags asynchronously and configure tag list view
         controller.loadAllTagsAsync()
                 .thenAccept(loadedTags -> Platform.runLater(() -> {
                     tags.setAll(loadedTags);
@@ -92,6 +107,10 @@ public class MovementView {
                 });
     }
 
+    /**
+     * Handles adding a new movement using user input from the form.
+     * Validates and sends the data asynchronously to the controller, then reloads the movement list.
+     */
     @FXML
     private void handleAddMovement() {
         try {
@@ -117,6 +136,10 @@ public class MovementView {
         }
     }
 
+    /**
+     * Handles deleting the selected movement.
+     * Prompts error if no movement is selected, then performs asynchronous deletion and reload.
+     */
     @FXML
     private void handleDeleteMovement() {
         Movement selected = movementTable.getSelectionModel().getSelectedItem();
@@ -138,6 +161,10 @@ public class MovementView {
                 });
     }
 
+    /**
+     * Handles updating the selected movement with the data entered in the form.
+     * Validates fields, updates the movement object, sends it asynchronously, then reloads list.
+     */
     @FXML
     private void handleUpdateMovement() {
         Movement selected = movementTable.getSelectionModel().getSelectedItem();
@@ -180,12 +207,18 @@ public class MovementView {
         }
     }
 
+    /**
+     * Handles navigation back to the main view.
+     */
     @FXML
     private void handleBackToMain() {
         Stage stage = (Stage) movementTable.getScene().getWindow();
         SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
     }
 
+    /**
+     * Clears the form input fields and resets selections.
+     */
     private void clearForm() {
         descriptionField.clear();
         amountField.clear();

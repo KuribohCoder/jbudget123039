@@ -23,6 +23,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controller class for the amortization plan view.
+ * <p>
+ * Manages user interaction with the UI for creating, modifying, deleting,
+ * and displaying scheduled amortization movements (installments).
+ * It supports input of amortization details such as total amount,
+ * number of installments, interest rate, start date, and tags.
+ * <p>
+ * Interacts with {@link ScheduledMovementController} to persist and
+ * retrieve scheduled movements asynchronously.
+ */
 public class AmortizationView {
 
     @FXML private TextField importoField;
@@ -47,6 +58,12 @@ public class AmortizationView {
 
     private final ObservableList<Tag> tagList = FXCollections.observableArrayList();
 
+    /**
+     * Initializes the controller class.
+     * <p>
+     * Sets up table columns, loads existing amortization movements and tags asynchronously,
+     * and processes due scheduled movements on startup.
+     */
     @FXML
     private void initialize() {
         rataTable.setItems(rateList);
@@ -93,6 +110,13 @@ public class AmortizationView {
                 });
     }
 
+    /**
+     * Handles the creation of a new amortization plan based on user input.
+     * <p>
+     * Calculates installments with interest, saves them asynchronously,
+     * and updates the view.
+     * Displays error messages if input is invalid or if saving fails.
+     */
     @FXML
     private void handleCreaAmmortamento() {
         try {
@@ -147,6 +171,12 @@ public class AmortizationView {
         }
     }
 
+    /**
+     * Refreshes the table displaying the amortization installments.
+     * <p>
+     * Loads all scheduled movements from the controller and filters
+     * only those originated from amortization plans.
+     */
     private void refreshRateTable() {
         controller.loadAllScheduledMovements()
                 .thenAccept(list -> {
@@ -161,6 +191,12 @@ public class AmortizationView {
                 });
     }
 
+    /**
+     * Handles deletion of the selected amortization installment.
+     * <p>
+     * Deletes the selected entry asynchronously and refreshes the table.
+     * Displays error messages if no installment is selected or deletion fails.
+     */
     @FXML
     private void handleEliminaRata() {
         ScheduledMovement selected = rataTable.getSelectionModel().getSelectedItem();
@@ -178,6 +214,13 @@ public class AmortizationView {
                 });
     }
 
+    /**
+     * Handles modification of the selected amortization installment.
+     * <p>
+     * Updates fields of the selected installment with current UI input values,
+     * saves asynchronously, and refreshes the table.
+     * Displays error messages if no installment is selected or data is invalid.
+     */
     @FXML
     private void handleModificaRata() {
         ScheduledMovement selected = rataTable.getSelectionModel().getSelectedItem();
@@ -222,6 +265,9 @@ public class AmortizationView {
         }
     }
 
+    /**
+     * Clears all input fields and selections in the UI.
+     */
     private void clearFields() {
         nomePianoField.clear();
         importoField.clear();
@@ -231,6 +277,11 @@ public class AmortizationView {
         tagListView.getSelectionModel().clearSelection();
     }
 
+    /**
+     * Handles navigation back to the main UI scene.
+     * <p>
+     * Switches the current stage's scene to the main view.
+     */
     @FXML
     private void handleBackToMain() {
         javafx.stage.Stage stage = (javafx.stage.Stage) importoField.getScene().getWindow();

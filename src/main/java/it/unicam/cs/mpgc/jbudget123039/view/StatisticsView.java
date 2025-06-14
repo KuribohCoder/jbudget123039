@@ -18,6 +18,15 @@ import java.util.Map;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.showError;
 
+/**
+ * Controller for the statistics comparison view.
+ * <p>
+ * Allows users to select two date ranges and compare financial statistics by category
+ * between these two periods.
+ * Displays the comparison results in a table and a bar chart.
+ * Handles asynchronous data retrieval and updates the UI accordingly.
+ * </p>
+ */
 public class StatisticsView {
 
     @FXML private DatePicker startDate1, endDate1, startDate2, endDate2;
@@ -27,6 +36,10 @@ public class StatisticsView {
     @FXML private BarChart<String, Number> barChart;
     private final StatisticsController controller = new StatisticsController();
 
+    /**
+     * Initializes the controller by setting up the table columns
+     * to show category and amounts for the two periods.
+     */
     @FXML
     public void initialize() {
         colCategory.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().category()));
@@ -34,6 +47,13 @@ public class StatisticsView {
         colPeriod2.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().amount2()));
     }
 
+    /**
+     * Handles the action of comparing two selected periods.
+     * Validates that all date fields are filled.
+     * Calls the controller to perform the comparison asynchronously,
+     * then updates the table and bar chart with the results.
+     * Shows an error dialog if validation or comparison fails.
+     */
     @FXML
     private void handleCompare() {
         LocalDate from1 = startDate1.getValue();
@@ -63,12 +83,22 @@ public class StatisticsView {
                 });
     }
 
+    /**
+     * Navigates back to the main view.
+     */
     @FXML
     private void handleBack() {
         Stage stage = (Stage) startDate1.getScene().getWindow();
         SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
     }
 
+    /**
+     * Updates the bar chart with the comparison data.
+     * Each category is shown with amounts from the two periods side by side.
+     * Categories longer than 12 characters are truncated with an ellipsis.
+     *
+     * @param data a map of category names to their comparison data
+     */
     private void updateBarChart(Map<String, StatisticsController.StatComparison> data) {
         barChart.getData().clear();
 
@@ -96,5 +126,13 @@ public class StatisticsView {
         }
     }
 
+    /**
+     * Immutable record representing a row in the comparison table,
+     * containing the category name and amounts for the two periods.
+     *
+     * @param category the category name
+     * @param amount1 the amount for period 1
+     * @param amount2 the amount for period 2
+     */
     public record StatEntry(String category, BigDecimal amount1, BigDecimal amount2) {}
 }

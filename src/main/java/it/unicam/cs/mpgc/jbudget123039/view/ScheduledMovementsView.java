@@ -20,6 +20,15 @@ import java.util.stream.Collectors;
 
 import static it.unicam.cs.mpgc.jbudget123039.util.DialogUtils.showError;
 
+/**
+ * Controller for the Scheduled Movements view.
+ * <p>
+ * Manages display and CRUD operations of scheduled financial movements that are set manually.
+ * Supports asynchronous loading and updating of scheduled movements and associated tags.
+ * Provides user interface interaction for adding, deleting, updating scheduled movements,
+ * and navigation back to the main view.
+ * </p>
+ */
 public class ScheduledMovementsView {
 
     private final ScheduledMovementController controller = new ScheduledMovementController();
@@ -37,6 +46,11 @@ public class ScheduledMovementsView {
     @FXML private CheckBox checkIncome;
     @FXML private ListView<Tag> listTags;
 
+    /**
+     * Initializes the controller by setting up table columns,
+     * loading scheduled movements and tags asynchronously,
+     * and configuring UI elements.
+     */
     @FXML
     public void initialize() {
         colDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
@@ -50,6 +64,10 @@ public class ScheduledMovementsView {
         loadTags();
     }
 
+    /**
+     * Loads all manual scheduled movements asynchronously and populates the table.
+     * Displays an error dialog if loading fails.
+     */
     private void loadScheduledMovements() {
         controller.loadAllManualScheduledMovements()
                 .thenAccept(movements ->
@@ -61,6 +79,9 @@ public class ScheduledMovementsView {
                 });
     }
 
+    /**
+     * Loads all tags asynchronously and populates the tag selection list.
+     */
     private void loadTags() {
         controller.loadAllTagsAsync().thenAccept(tags -> {
             Platform.runLater(() -> {
@@ -70,6 +91,13 @@ public class ScheduledMovementsView {
         });
     }
 
+    /**
+     * Handles adding a new scheduled movement with data from the input fields.
+     * Validates inputs, creates a ScheduledMovement object,
+     * and saves it asynchronously.
+     * Clears form fields after successful save.
+     * Shows error dialogs for validation failures or save errors.
+     */
     @FXML
     private void handleAdd() {
         String description = txtDescription.getText().trim();
@@ -97,7 +125,7 @@ public class ScheduledMovementsView {
             controller.saveOrUpdateScheduledMovement(movement)
                     .thenRun(() -> {
                         loadScheduledMovements();
-                        Platform.runLater(this::clearFields); // <-- eseguito dopo il salvataggio
+                        Platform.runLater(this::clearFields);
                     })
                     .exceptionally(ex -> {
                         ex.printStackTrace();
@@ -109,6 +137,11 @@ public class ScheduledMovementsView {
         }
     }
 
+    /**
+     * Handles deletion of the selected scheduled movement.
+     * Shows error if no movement is selected.
+     * Reloads scheduled movements after deletion.
+     */
     @FXML
     private void handleDelete() {
         ScheduledMovement selected = tableScheduledMovements.getSelectionModel().getSelectedItem();
@@ -126,6 +159,11 @@ public class ScheduledMovementsView {
                 });
     }
 
+    /**
+     * Handles updating the selected scheduled movement with the data from the input fields.
+     * Validates inputs and saves changes asynchronously.
+     * Shows errors for validation failures or save errors.
+     */
     @FXML
     private void handleUpdate() {
         ScheduledMovement selected = tableScheduledMovements.getSelectionModel().getSelectedItem();
@@ -151,8 +189,7 @@ public class ScheduledMovementsView {
                 selected.setScheduledDate(date);
             }
 
-            List<Tag> selectedTags = listTags.getSelectionModel()
-                    .getSelectedItems();
+            List<Tag> selectedTags = listTags.getSelectionModel().getSelectedItems();
             if (!selectedTags.isEmpty()) {
                 selected.setTags(selectedTags);
             }
@@ -170,6 +207,9 @@ public class ScheduledMovementsView {
         }
     }
 
+    /**
+     * Clears all input fields and resets selection in the form.
+     */
     private void clearFields() {
         txtDescription.clear();
         txtAmount.clear();
@@ -178,6 +218,9 @@ public class ScheduledMovementsView {
         listTags.getSelectionModel().clearSelection();
     }
 
+    /**
+     * Handles navigation back to the main view.
+     */
     @FXML
     private void handleBack() {
         Stage stage = (Stage) tableScheduledMovements.getScene().getWindow();

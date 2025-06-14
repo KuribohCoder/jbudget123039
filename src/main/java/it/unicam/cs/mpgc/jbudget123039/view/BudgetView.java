@@ -22,6 +22,14 @@ import javafx.stage.Stage;
 
 import java.time.LocalDate;
 
+/**
+ * Controller class for managing the Budget view.
+ * <p>
+ * This class handles the UI components and user interactions related to Budgets,
+ * including displaying budgets, adding, updating, deleting budgets, and filtering associated movements.
+ * It integrates with {@link BudgetController} for business logic operations.
+ * </p>
+ */
 public class BudgetView {
 
     @FXML private TableView<Budget> budgetTable;
@@ -34,7 +42,6 @@ public class BudgetView {
     @FXML private DatePicker endDatePicker;
     @FXML private ComboBox<Tag> tagCombo;
 
-    // Nuova TableView per i movimenti associati
     @FXML private TableView<Movement> movementTable;
     @FXML private TableColumn<Movement, String> colMovementDescription;
     @FXML private TableColumn<Movement, String> colMovementAmount;
@@ -43,12 +50,19 @@ public class BudgetView {
     private final BudgetRepository budgetRepository = new BudgetRepository();
     private final MovementRepository movementRepository = new MovementRepository();
     private final TagRepository tagRepository = new TagRepository();
-    private final BudgetService budgetService = new BudgetService(budgetRepository, movementRepository,tagRepository);
+    private final BudgetService budgetService = new BudgetService(budgetRepository, movementRepository, tagRepository);
     private final BudgetController controller = new BudgetController(budgetService);
     private final ObservableList<Tag> tags = FXCollections.observableArrayList();
     private final ObservableList<Budget> budgets = FXCollections.observableArrayList();
     private final ObservableList<Movement> movements = FXCollections.observableArrayList();
 
+    /**
+     * Initializes the BudgetView.
+     * <p>
+     * Sets up table columns, listeners for selection changes, loads budgets and tags,
+     * and configures movement filtering based on selected tag.
+     * </p>
+     */
     @FXML
     public void initialize() {
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
@@ -57,7 +71,6 @@ public class BudgetView {
 
         budgetTable.setItems(budgets);
 
-        // Setup colonne tabella movimenti
         colMovementDescription.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
         colMovementAmount.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAmount().toString()));
         colMovementDate.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getDate()));
@@ -98,6 +111,9 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Loads all budgets asynchronously and updates the budget table.
+     */
     private void loadBudgets() {
         controller.loadAllBudgets()
                 .thenAccept(list -> Platform.runLater(() -> {
@@ -112,6 +128,11 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Loads movements associated with a specific budget.
+     *
+     * @param budget the selected budget whose movements will be loaded
+     */
     private void loadMovements(Budget budget) {
         controller.loadMovementsForBudget(budget)
                 .thenAccept(list -> Platform.runLater(() -> {
@@ -125,6 +146,12 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Loads movements associated with a specific budget filtered by a selected tag.
+     *
+     * @param budget the selected budget whose movements will be loaded
+     * @param tag    the tag used to filter movements
+     */
     private void loadMovementsWithTag(Budget budget, Tag tag) {
         controller.loadMovementsForBudgetWithTag(budget, tag)
                 .thenAccept(list -> Platform.runLater(() -> {
@@ -138,12 +165,21 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Populates the form fields with the data of the selected budget.
+     *
+     * @param budget the budget to display in the form
+     */
     private void populateForm(Budget budget) {
         nameField.setText(budget.getName());
         startDatePicker.setValue(budget.getStartDate());
         endDatePicker.setValue(budget.getEndDate());
     }
 
+    /**
+     * Handles the event triggered when the user wants to add a new budget.
+     * Validates input fields, creates a new budget, and saves it via the controller.
+     */
     @FXML
     private void handleAddBudget() {
         String name = nameField.getText();
@@ -169,6 +205,10 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Handles the event triggered when the user wants to update the selected budget.
+     * Validates input fields and updates the budget accordingly.
+     */
     @FXML
     private void handleUpdateBudget() {
         Budget selected = budgetTable.getSelectionModel().getSelectedItem();
@@ -200,6 +240,10 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Handles the event triggered when the user wants to delete the selected budget.
+     * Asks for confirmation before deleting and refreshes the budget list.
+     */
     @FXML
     private void handleDeleteBudget() {
         Budget selected = budgetTable.getSelectionModel().getSelectedItem();
@@ -222,12 +266,18 @@ public class BudgetView {
                 });
     }
 
+    /**
+     * Navigates back to the main scene.
+     */
     @FXML
     private void handleBackToMain() {
         Stage stage = (Stage) budgetTable.getScene().getWindow();
         SceneSwitcherUtils.switchScene(stage, "/ui/main.fxml");
     }
 
+    /**
+     * Clears the form fields and resets selections.
+     */
     private void clearForm() {
         nameField.clear();
         startDatePicker.setValue(null);

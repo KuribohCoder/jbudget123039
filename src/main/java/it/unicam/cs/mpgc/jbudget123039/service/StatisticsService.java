@@ -13,24 +13,33 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 /**
- * Service per il calcolo e confronto delle statistiche fra due periodi.
+ * Service per il calcolo e confronto delle statistiche finanziarie
+ * fra due periodi temporali distinti.
+ * <p>
+ * Permette di confrontare l'importo totale delle spese o entrate
+ * categorizzate per tag in due intervalli di date.
  */
 public class StatisticsService {
 
     private final MovementRepository movementRepository;
 
+    /**
+     * Costruttore che inizializza il repository dei movimenti.
+     */
     public StatisticsService() {
         this.movementRepository = new MovementRepository();
     }
 
     /**
-     * Confronta due periodi: per ogni categoria (tag), calcola la spesa/entrata totale in ciascuno.
+     * Confronta due periodi temporali calcolando la somma degli importi per ciascuna categoria (tag).
+     * Se un movimento non ha tag, viene raggruppato sotto la categoria "Senza categoria".
      *
-     * @param start1 inizio periodo 1
-     * @param end1 fine periodo 1
-     * @param start2 inizio periodo 2
-     * @param end2 fine periodo 2
-     * @return CompletionStage di map da tag-name a record contenente due BigDecimal
+     * @param start1 inizio del primo periodo
+     * @param end1 fine del primo periodo
+     * @param start2 inizio del secondo periodo
+     * @param end2 fine del secondo periodo
+     * @return {@link CompletableFuture} che restituisce una mappa da nome del tag
+     *         a {@link StatComparison} contenente le somme per ciascun periodo
      */
     public CompletableFuture<Map<String, StatComparison>> comparePeriods(
             LocalDate start1, LocalDate end1,
@@ -56,7 +65,6 @@ public class StatisticsService {
                     Map<String, BigDecimal> sum1 = sumByTag(list1);
                     Map<String, BigDecimal> sum2 = sumByTag(list2);
 
-                    // Union di tutte le categorie
                     Set<String> allTags = new HashSet<>();
                     allTags.addAll(sum1.keySet());
                     allTags.addAll(sum2.keySet());
@@ -74,6 +82,13 @@ public class StatisticsService {
                 }).toCompletableFuture();
     }
 
+    /**
+     * Calcola la somma degli importi dei movimenti raggruppandoli per nome tag.
+     * I movimenti senza tag sono raggruppati sotto "Senza categoria".
+     *
+     * @param list lista di movimenti da aggregare
+     * @return mappa da nome tag a somma degli importi
+     */
     private Map<String, BigDecimal> sumByTag(List<Movement> list) {
         Map<String, BigDecimal> map = new HashMap<>();
         for (Movement m : list) {
@@ -89,5 +104,12 @@ public class StatisticsService {
         return map;
     }
 
+    /**
+     * Record che rappresenta il confronto tra due valori statistici.
+     * Contiene la somma degli importi per due periodi distinti.
+     *
+     * @param amount1 somma del primo periodo
+     * @param amount2 somma del secondo periodo
+     */
     public record StatComparison(BigDecimal amount1, BigDecimal amount2) {}
 }

@@ -5,13 +5,23 @@ import it.unicam.cs.mpgc.jbudget123039.model.movement.Movement;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.BudgetEntity;
 import it.unicam.cs.mpgc.jbudget123039.persistence.entity.MovementEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper per la conversione tra oggetti BudgetEntity e Budget.
+ * Fornisce metodi statici per la trasformazione bidirezionale tra modello e entity.
+ */
 public class BudgetMapper {
 
+    /**
+     * Converte un oggetto BudgetEntity in un oggetto Budget.
+     * Effettua la conversione anche della lista di movimenti associati.
+     *
+     * @param entity l'entità BudgetEntity da convertire
+     * @return l'oggetto Budget corrispondente oppure null se l'entità è null
+     */
     public static Budget toModel(BudgetEntity entity) {
         if (entity == null) return null;
 
@@ -30,6 +40,14 @@ public class BudgetMapper {
         return model;
     }
 
+    /**
+     * Converte un oggetto Budget in un oggetto BudgetEntity.
+     * Se l'id del modello è null, viene generato un nuovo UUID.
+     * Effettua la conversione anche della lista di movimenti associati.
+     *
+     * @param model l'oggetto Budget da convertire
+     * @return l'entità BudgetEntity corrispondente oppure null se il modello è null
+     */
     public static BudgetEntity toEntity(Budget model) {
         if (model == null) return null;
 

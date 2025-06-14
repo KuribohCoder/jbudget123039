@@ -7,14 +7,17 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Utility per gestire il cambio di scena in applicazioni JavaFX.
+ */
 public class SceneSwitcherUtils {
-    /**
-     * Cambia la scena corrente con quella caricata da fxmlPath.
-     *
-     * @param currentStage lo stage corrente
-     * @param fxmlPath     percorso FXML relativo, es. "/ui/main.fxml"
-     */
 
+    /**
+     * Cambia la scena corrente dello stage con quella caricata dal file FXML specificato.
+     *
+     * @param stage    lo stage corrente in cui cambiare la scena
+     * @param fxmlPath percorso relativo del file FXML da caricare (es. "/ui/main.fxml")
+     */
     public static void switchScene(Stage stage, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(SceneSwitcherUtils.class.getResource(fxmlPath));
