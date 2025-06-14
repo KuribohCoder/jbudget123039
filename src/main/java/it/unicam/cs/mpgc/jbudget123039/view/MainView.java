@@ -17,36 +17,37 @@ public class MainView {
     @FXML
     private void showMovements() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/MovementView.fxml", "Gestione Movimenti", stage);
+        switchScene("/ui/movement.fxml", "Gestione Movimenti", stage);
     }
 
     @FXML
     private void showTags() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/TagView.fxml", "Gestione Tag", stage);
+        switchScene("/ui/tag.fxml", "Gestione Tag", stage);
     }
 
     @FXML
     private void showBudget() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/BudgetView.fxml", "Gestione Budget", stage);
+        switchScene("/ui/budget.fxml", "Gestione Budget", stage);
     }
 
     @FXML
     private void showStatistics() {
-        System.out.println("Funzione Statistiche non ancora implementata.");
+        Stage stage = (Stage) mainRoot.getScene().getWindow();
+        switchScene("/ui/StatisticsView.fxml", "Statistiche", stage);
     }
 
     @FXML
     private void showAmortization() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/AmortizationView.fxml", "Piano di Ammortamento", stage);
+        switchScene("/ui/amortization.fxml", "Piano di Ammortamento", stage);
     }
 
     @FXML
     private void showScheduledMovements() {
         Stage stage = (Stage) mainRoot.getScene().getWindow();
-        switchScene("/ui/ScheduledMovementsView.fxml", "Scadenziario", stage);
+        switchScene("/ui/scheduledMovements.fxml", "Scadenziario", stage);
     }
 
     private void switchScene(String path, String title, Stage stage) {

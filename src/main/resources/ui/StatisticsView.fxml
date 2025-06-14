@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="it.unicam.cs.mpgc.jbudget123039.view.StatisticsView"
+      spacing="15" alignment="CENTER" style="-fx-padding: 20;">
+
+    <Label text="Statistiche Bilancio" style="-fx-font-size: 18px;"/>
+
+    <HBox spacing="20">
+        <VBox spacing="5">
+            <Label text="Periodo 1"/>
+            <DatePicker fx:id="startDate1" promptText="Inizio"/>
+            <DatePicker fx:id="endDate1" promptText="Fine"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Periodo 2"/>
+            <DatePicker fx:id="startDate2" promptText="Inizio"/>
+            <DatePicker fx:id="endDate2" promptText="Fine"/>
+        </VBox>
+    </HBox>
+
+    <Button text="Confronta" onAction="#handleCompare"/>
+
+    <TableView fx:id="tableComparison" prefHeight="300" prefWidth="600">
+        <columns>
+            <TableColumn fx:id="colCategory" text="Categoria" prefWidth="200"/>
+            <TableColumn fx:id="colPeriod1" text="Periodo 1 (€)" prefWidth="200"/>
+            <TableColumn fx:id="colPeriod2" text="Periodo 2 (€)" prefWidth="200"/>
+        </columns>
+    </TableView>
+
+    <Button text="Torna al Menu" onAction="#handleBack"/>
+</VBox>
